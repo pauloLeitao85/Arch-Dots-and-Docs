@@ -852,3 +852,41 @@ If you prefer to finish the setup from another computer (for easier copy-pasting
 	***Note***: Look for the number next to inet under your Wi-Fi or Ethernet (usually looks like 192.168.1.X).
 	
 ---
+
+### 3. Optimize Your Mirrors (Reflector)
+The mirrors used during installation might not be the fastest for your specific location. We’ll use reflector to find the best servers near you.
+
+```
+sudo reflector --country 'Canada,United States' --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+```
+
+***What this does***: It finds the 10 most recently synchronized HTTPS mirrors in your region, tests their actual download speed, and saves the winners to your system.
+
+1. Automate Your Mirror Updates
+
+	Reflector comes with a built-in service that can update your mirrors automatically. Let’s configure it to run once a week so your system always stays fast.
+
+	1. Edit the Reflector configuration:
+	
+	```
+	sudo nvim /etc/xdg/reflector/reflector.conf
+	```
+
+	2. Paste this “High-Speed” config Replace everything in that file with this. This tells Reflector to find the 10 fastest HTTPS mirrors in Canada or the US updated in the last 12 hours:
+
+	```
+	--save /etc/pacman.d/mirrorlist
+	--protocol https
+	--country Canada,United States
+	--latest 10
+	--sort rate
+	--age 12
+	```
+
+	3. Enable the Timer Now, "flip the switch" to make it run automatically every week:
+
+	```bash
+	sudo systemctl enable --now reflector.timer
+	```
+
+---
