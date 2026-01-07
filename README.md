@@ -890,3 +890,13 @@ Reflector comes with a built-in service that can update your mirrors automatical
 	```
 
 ---
+
+### 4. Synchronize and Update
+
+Now that you have fast mirrors, let’s do a final sync to make sure everything is perfectly up to date.
+
+```bash
+sudo pacman -Syu
+```
+
+---
