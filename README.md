@@ -172,6 +172,7 @@ ls /sys/firmware/efi/efivars
 *Explanation:* If this directory exists and is populated, you are in UEFI mode. If not, stop and check your BIOS settings.
 
 ---
+---
 
 ## Phase 2: Partitioning &amp; Encryption
 
@@ -337,14 +338,7 @@ We will now mount everything in its final location using performance flags.
 
 ---
 
-#### Why this layout is "Lean"
-
-By mounting `@log` and `@pkg_cache` as separate subvolumes, they are technically **outside** your root (`@`) subvolume. When you use a tool like `Snapper` to snapshot `@`, it will "skip" these folders.
-
-- **Space Saved:** Your system snapshots won't grow every time you download a large update or generate massive logs.
-- **Safety:** If you roll back your system to "yesterday," you won't lose the logs from "today," which helps you figure out what went wrong.
-
-#### Pro-Tip: Verification Step
+### 4. Verification Step
 
 Before moving to the next phase, verify that your "plumbing" is correct. Run:
 
@@ -357,5 +351,14 @@ lsblk
 ![lsblk_mounts](images/lsblk_mounts.png)
 
 If a mount point is missing, go back and re-run the `mount` command for that subvolume!
+
+---
+
+### 5. Why this layout is "Lean"
+
+By mounting `@log` and `@pkg_cache` as separate subvolumes, they are technically **outside** your root (`@`) subvolume. When you use a tool like `Snapper` to snapshot `@`, it will "skip" these folders.
+
+- **Space Saved:** Your system snapshots won't grow every time you download a large update or generate massive logs.
+- **Safety:** If you roll back your system to "yesterday," you won't lose the logs from "today," which helps you figure out what went wrong.
 
 ---
