@@ -243,3 +243,119 @@ cryptsetup open /dev/nvme0n1p2 cryptroot
 ![lsblk_verification](images/lsblk_verification.png)
 
 ---
+
+## Phase 3: Btrfs Subvolume Layout
+
+This phase is where you define how your data is organized and how your system will handle "time travel" (backups/snapshots). Btrfs allows "Subvolumes"—dynamic partitions that share the same free space. We are going to use the **"Lean Snapshot"** strategy. This ensures that when you take a system backup, it stays tiny by excluding folders that don't need to be saved (like caches and logs).
+
+
+### 1. Format the Unlocked Vault
+
+Now that your LUKS container is open at `/dev/mapper/cryptroot`, we format it with Btrfs.
+
+```bash
+mkfs.btrfs -L Arch /dev/mapper/cryptroot
+```
+
+---
+
+### 2. Create the Subvolume Layout
+
+To create subvolumes, we must first mount the main partition temporarily.
+
+```bash
+mount /dev/mapper/cryptroot /mnt
+```
+
+Now, create the subvolumes. Notice we are separating the "heavy" folders like `@pkg_cache` and `@log`.
+
+```bash
+btrfs subvolume create /mnt/@
+btrfs subvolume create /mnt/@home
+btrfs subvolume create /mnt/@snapshots
+btrfs subvolume create /mnt/@log
+btrfs subvolume create /mnt/@pkg_cache
+```
+
+***Explanation***:
+
+- **`@` (Root):** Contains the OS. We snapshot this to roll back the system.
+- **`@home`:** Your personal data. Excluded from root snapshots so rolling back the OS doesn't delete your documents.
+- **`@snapshots`:** Where Snapper saves the snapshots. Kept separate to prevent infinite recursion (snapshotting the snapshot folder).
+- **`@log`:** System logs. Excluded so that if you roll back a broken system, you can still read the logs to see *why* it broke.
+- **`@pkg_cache`:** Pacman cache. Excluded so you don't lose downloaded packages after a rollback (saves re-downloading).
+- **Note on `@var`:** We do **NOT** separate `/var` entirely. The pacman database (`/var/lib/pacman`) MUST stay with the Root (`@`). If you separate it and roll back Root, your installed binaries won't match the database, breaking package management.
+
+Unmount the temporary root:
+
+```bash
+umount /mnt
+```
+
+---
+
+### 3. Mount Boot Partition and Subvolumes with Optimizations
+
+We will now mount everything in its final location using performance flags.
+
+1. **First, mount the Root (`@`):**
+
+	```bash
+	mount -o noatime,compress=zstd,ssd,discard=async,space_cache=v2,subvol=@ /dev/mapper/cryptroot /mnt
+	```
+
+2. Next, create the mount points (the "folders"):
+
+	```bash
+	mkdir -p /mnt/{home,.snapshots,var/log,var/cache/pacman/pkg,boot}
+	```
+
+3. Now, mount the rest of the subvolumes:
+
+	```bash
+	mount -o noatime,compress=zstd,ssd,discard=async,space_cache=v2,subvol=@home /dev/mapper/cryptroot /mnt/home
+	mount -o noatime,compress=zstd,ssd,discard=async,space_cache=v2,subvol=@snapshots /dev/mapper/cryptroot /mnt/.snapshots
+	mount -o noatime,compress=zstd,ssd,discard=async,space_cache=v2,subvol=@log /dev/mapper/cryptroot /mnt/var/log
+	mount -o noatime,compress=zstd,ssd,discard=async,space_cache=v2,subvol=@pkg_cache /dev/mapper/cryptroot /mnt/var/cache/pacman/pkg
+	```
+
+	***Explanation:***
+	
+	| Flag | Why we use it |
+	| :--- | :--- |
+	| **`compress=zstd`** | **The Space Saver.** Compresses data on the fly. It makes the disk "faster" because the CPU compresses the data quicker than the disk can write the uncompressed version. |
+	| **`noatime`** | **The Life Extender.** Normally, Linux writes to the disk every time you simply *read* a file (to record the "access time"). This turns that off, reducing unnecessary wear on your NVMe. |
+	| **`ssd`** | **Layout Optimization.** Tells Btrfs to use allocation strategies specifically designed for solid-state storage rather than spinning platters. |
+	| **`discard=async`** | **The Background Cleaner.** This is the modern way to handle "TRIM." It tells the SSD which blocks are no longer used in the background, keeping your write speeds high over time. |
+	| **`space_cache=v2`** | **Fast Booting.** This flag helps the system track free space much faster. While it is technically the default in modern Linux kernels (5.15+), explicitly including it is a "safety first" practice. |
+
+4. Finaly, mount the Boot Partition:
+
+	```bash
+	mount /dev/nvme0n1p1 /mnt/boot
+	```
+
+---
+
+#### Why this layout is "Lean"
+
+By mounting `@log` and `@pkg_cache` as separate subvolumes, they are technically **outside** your root (`@`) subvolume. When you use a tool like `Snapper` to snapshot `@`, it will "skip" these folders.
+
+- **Space Saved:** Your system snapshots won't grow every time you download a large update or generate massive logs.
+- **Safety:** If you roll back your system to "yesterday," you won't lose the logs from "today," which helps you figure out what went wrong.
+
+#### Pro-Tip: Verification Step
+
+Before moving to the next phase, verify that your "plumbing" is correct. Run:
+
+```bash
+lsblk
+```
+
+***Success look like this*:** You should see your drive (`nvme0n1`) with two partitions. Under the second partition, you should see `cryptroot` with **all five** mount points listed:
+
+![lsblk_mounts](images/lsblk_mounts.png)
+
+If a mount point is missing, go back and re-run the `mount` command for that subvolume!
+
+---
