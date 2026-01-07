@@ -797,7 +797,7 @@ Run these commands in order. This ensures all your data is physically written to
 
 Welcome to your new Arch Linux system. Now that you’ve rebooted and logged in, let’s get the system connected and optimized.
 
-#### 1. Connect to Wi-Fi
+### 1. Connect to Wi-Fi
 
 Since we are now in the installed system, we use `nmcli` (Network Manager) to handle our connections permanently.
 
