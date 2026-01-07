@@ -463,7 +463,7 @@ This command installs the "foundation" of your system, including the bootloader,
 pacman -S grub efibootmgr zram-generator intel-ucode reflector linux-headers bluez bluez-utils xdg-utils xdg-user-dirs network-manager-applet pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber
 ```
 
-##### Package Breakdown
+***Package Breakdown***:
 
 - **`grub` &amp; `efibootmgr`**: The core tools required to create and manage your boot menu so the motherboard can find Arch.
 - **`zram-generator`**: The modern way to handle swap, compressing data in your RAM to keep the system fast under heavy load.
