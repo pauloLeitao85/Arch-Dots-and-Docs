@@ -27,10 +27,10 @@ Navigate to the [Arch Linux Download page](https://archlinux.org/download/) and 
 <div _ngcontent-ng-c4186646317="" aria-busy="false" aria-live="polite" class="markdown markdown-main-panel stronger enable-updated-hr-color" dir="ltr" id="bkmrk-the-iso%3A%C2%A0archlinux-2" inline-copy-host="">- **The ISO:** `archlinux-202X.XX.XX-x86_64.iso`
 - **The Checksum:** `sha256sums.txt`
 - **The Signature:** `archlinux-202X.XX.XX-x86_64.iso.sig`
+</div>
 
 ---
 
-</div>
 ### 2. Verification (The Security Check)
 
 Before touching your USB drive, ensure the file is perfect.
