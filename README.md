@@ -754,3 +754,41 @@ systemctl enable fstrim.timer
 | **`systemctl enable fstrim.timer`** | Schedules a weekly "cleanup" (Trim) of your drive. | Provides automatic maintenance to keep your NVMe/SSD fast and healthy. |
 
 ---
+
+### 5. The Escape Sequence
+
+Run these commands in order. This ensures all your data is physically written to the NVMe and the "vault" is locked safely before the restart.
+
+1. Step out of the new system
+
+	This takes you out of the `arch-chroot` and back to the USB environment.
+	
+	```bash
+	exit
+	```
+
+2. Unmount everything
+
+	This "unplugs" all your Btrfs subvolumes and your boot partition safely.
+	
+	```bash
+	umount -R /mnt
+	```
+
+3. Close the Encrypted Vault
+
+	This locks your LUKS partition so it can be re-opened by your bootloader.
+	
+	```bash
+	cryptsetup close cryptroot
+	```
+
+4. The Final Reboot
+
+	Pull out your USB drive once the screen goes dark!
+	
+	```bash
+	reboot
+	```
+
+---
