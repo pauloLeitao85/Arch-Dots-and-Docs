@@ -124,7 +124,7 @@ Now we move the data from your computer to the USB drive.
 	```
 
 
-	- *Explanation:* `timedatectl` synchronizes your clock. If your clock is wrong, SSL certificates (used by HTTPS websites/mirrors) 	will appear invalid, and package downloads will fail.
+- *Explanation:* `timedatectl` synchronizes your clock. If your clock is wrong, SSL certificates (used by HTTPS websites/mirrors) will appear invalid, and package downloads will fail.
 
 ---
 ### 6. Setting up the SSH Bridge (Optional)
