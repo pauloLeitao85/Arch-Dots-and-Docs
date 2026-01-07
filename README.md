@@ -792,3 +792,63 @@ Run these commands in order. This ensures all your data is physically written to
 	```
 
 ---
+
+## Phase 7: Post-Install (The First Boot)
+
+Welcome to your new Arch Linux system. Now that you’ve rebooted and logged in, let’s get the system connected and optimized.
+
+#### 1. Connect to Wi-Fi
+
+Since we are now in the installed system, we use `nmcli` (Network Manager) to handle our connections permanently.
+
+1. **Turn on the Wi-Fi radio:**
+
+	```bash
+	nmcli radio wifi on
+	```
+
+2. **List available networks:**
+
+	```bash
+	nmcli device wifi list
+	```
+
+3. **Connect to your network:**
+
+	```bash
+	nmcli device wifi connect "YOUR_SSID" password "YOUR_PASSWORD"
+	```
+
+---
+
+### 2. Enable Remote Management SSH (Optional) 
+
+If you prefer to finish the setup from another computer (for easier copy-pasting), install and enable the SSH daemon:
+
+1. Install the Server:
+
+	You installed `base`, but you might not have the SSH daemon yet. Run this on your Arch machine.
+
+	```
+	sudo pacman -S openssh
+	```
+
+2. Start and Enable the Service:
+
+	This makes the “door” available now and every time you reboot.
+
+	```
+	sudo systemctl enable --now sshd
+	```
+
+3. Find Your IP Address:
+
+	You need to know where to point your other computer.
+
+	```
+	ip addr show
+	```
+
+	***Note***: Look for the number next to inet under your Wi-Fi or Ethernet (usually looks like 192.168.1.X).
+	
+---
