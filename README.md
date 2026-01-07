@@ -17,23 +17,23 @@ Before touching your USB drive, ensure the file is perfect.
 
 #### A. Integrity Check
 
-Run this to ensure the file wasn't corrupted during the download:
+	Run this to ensure the file wasn't corrupted during the download:
+
+	```bash
+	sha256sum -c sha256sums.txt
+	```
+
+	**Note:** You may see errors for other files; as long as it says `archlinux-		202x...iso: OK`, you are safe.
+
+#### B. Authenticity Check
+
+Run this to ensure the file is officially from the Arch team:
 
 ```bash
-	sha256sum -c sha256sums.txt
+gpg --keyserver-options auto-key-retrieve --verify archlinux-202X.XX.XX-x86_64.iso.sig
 ```
 
-		 **Note:** You may see errors for other files; as long as it says `archlinux-		202x...iso: OK`, you are safe.
-
-	#### B. Authenticity Check
-
-	Run this to ensure the file is officially from the Arch team:
-
-		```bash
-		gpg --keyserver-options auto-key-retrieve --verify archlinux-202X.XX.XX-x86_64.iso.sig
-		```
-
-	 **Success:** Look for `gpg: Good signature from "[Developer Name]"`. Ignore the warning about "not certified with a trusted signature"—that is standard behavior for GPG.
+**Success:** Look for `gpg: Good signature from "[Developer Name]"`. Ignore the warning about "not certified with a trusted signature"—that is standard behavior for GPG.
 
 ---
 ### 3. Creating the Bootable USB
@@ -136,7 +136,7 @@ timedatectl status
 
 Installation is easier when you can copy-paste commands from your main computer.
 
-1. **Set a temporary root password (t**his password is only for the **live session):**
+a. **Set a temporary root password (t**his password is only for the **live session):**
     
 	```bash
 	passwd
@@ -144,12 +144,12 @@ Installation is easier when you can copy-paste commands from your main computer.
     
 	**Note:** This is only for the **live session**. It disappears 	when you reboot and won't affect your final system.
 
-2. **Start the SSH service:**
+b. **Start the SSH service:**
     
 	```bash
 	systemctl start sshd
 	```
-3. **Find your IP address:**
+c. **Find your IP address:**
     
 	```bash
 	ip addr show wlan0
@@ -157,7 +157,7 @@ Installation is easier when you can copy-paste commands from your main computer.
     
 	*Look for the number after `inet` (e.g., `192.168.1.15`).*
 
-4. **Connect from your OTHER computer:** Open your terminal on your daily-driver machine and type:
+d. **Connect from your OTHER computer:** Open your terminal on your daily-driver machine and type:
     
     ```bash
     ssh root@192.168.1.15
