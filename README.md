@@ -240,6 +240,6 @@ cryptsetup open /dev/nvme0n1p2 cryptroot
 
 ***Verification Step:*** Run `lsblk`. You should now see `cryptroot` nested under your second partition:
 
-[![image.png](https://bookstack.spiderhulk.net/uploads/images/gallery/2026-01/scaled-1680-/XLSimage.png)](https://bookstack.spiderhulk.net/uploads/images/gallery/2026-01/XLSimage.png)
+![lsblk_verification](images/lsblk_verification.png)
 
 ---
