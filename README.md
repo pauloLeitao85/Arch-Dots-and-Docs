@@ -55,7 +55,7 @@ Now we move the data from your computer to the USB drive.
 
 	We use the `dd` (Data Duplicator or Disk Destroyer) command. Replace `/dev/sdX` with your actual USB path (e.g., `/dev/sdb`).
 
-	##### Preparing the Drive
+   ***Preparing the Drive***
 
 	First, unmount the partition:
 
@@ -63,7 +63,7 @@ Now we move the data from your computer to the USB drive.
 	umount /dev/sdb
 	```
 
-	##### Flashing the ISO
+	***Flashing the ISO***
 
 	Now, we'll use `dd`. This command will take the input file (`if`)—your new Arch ISO—and write it to the output file (`of`)—your USB drive.
 
