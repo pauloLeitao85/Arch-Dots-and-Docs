@@ -868,20 +868,20 @@ Reflector comes with a built-in service that can update your mirrors automatical
 
 1. Edit the Reflector configuration:
 	
-```
-sudo nvim /etc/xdg/reflector/reflector.conf
-```
+	```
+	sudo nvim /etc/xdg/reflector/reflector.conf
+	```
 
 2. Paste this “High-Speed” config Replace everything in that file with this. This tells Reflector to find the 10 fastest HTTPS mirrors in Canada or the US updated in the last 12 hours:
 
-```
---save /etc/pacman.d/mirrorlist
---protocol https
---country Canada,United States
---latest 10
---sort rate
---age 12
-```
+	```
+	--save /etc/pacman.d/mirrorlist
+	--protocol https
+	--country Canada,United States
+	--latest 10
+	--sort rate
+	--age 12
+	```
 
 3. Enable the Timer Now, "flip the switch" to make it run automatically every week:
 
