@@ -362,3 +362,89 @@ By mounting `@log` and `@pkg_cache` as separate subvolumes, they are technically
 - **Safety:** If you roll back your system to "yesterday," you won't lose the logs from "today," which helps you figure out what went wrong.
 
 ---
+
+## Phase 4: Base System Installation
+
+
+Now that the foundation is ready, this is the part where we pull the official Arch Linux packages from the mirrors and install them into your `/mnt` directory. This phase is fast because we do the heavy lifting **once** we are inside the new system.
+
+### 1. Update the Mirrors (Optional but Recommended)
+
+To ensure fast download speeds, pick the best servers:
+
+```bash
+reflector --country Canada --age 12 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+```
+
+**Tip:** If you aren't in Canada, replace `Canada` with your own country (e.g., `United States`, `Germany`, `France`). You can also list multiple countries separated by commas, like `--country 'United States,Canada'`.
+
+Here is the breakdown of the command:
+
+- **`reflector`**: The base command that runs the mirror-sorting utility.
+- **`--country Canada`**: Limits the search to servers physically located in Canada. This is crucial for speed because it reduces "latency" (the time it takes for a server to respond to a request).
+- **`--age 12`**: Only includes mirrors that have successfully synchronized with the main Arch Linux server within the last 12 hours. This ensures you aren't using "stale" mirrors that are missing the latest software or security patches.
+- **`--protocol https`**: Only includes mirrors that support encrypted HTTPS connections. This provides a layer of security by preventing "Man-in-the-Middle" attacks from tampering with your data during transit.
+- **`--sort rate`**: Ranks the filtered list based on download speed (transfer rate). The fastest server will be placed at the top of the file.
+- **`--save /etc/pacman.d/mirrorlist`**: Tells the program to take the resulting list and overwrite your existing mirrorlist file. This is the file `pacman` looks at whenever you install or update a package.
+
+---
+
+### 2. The `pacstrap` Command
+
+We will now install the base system, the Linux kernel, and essential firmware. We are adding several critical tools here so you aren't left without internet or a text editor when you first reboot.
+
+```bash
+pacstrap -K /mnt base linux linux-firmware linux-firmware-marvell btrfs-progs neovim networkmanager sudo
+```
+
+- **`base`**: Minimal filesystem and core tools (ls, cp, bash).
+- **`base-devel`**: GCC, Make, Sudo. Required for compiling AUR packages later. (optional)
+- **`linux`** : Standard Linux Kernel.
+- **`linux-firmware`**: Drivers for Wi-Fi, GPUs, etc.
+- **`linux-firmware-marvell`**: **Critical:** Specific firmware required for Marvell wireless chips (common in Surface devices and certain laptops).
+- **`btrfs-progs`**: Userspace tools to manage Btrfs.
+- **`networkmanager`**: Easy network management tool.
+- **`neovim`**: Text editor (use `nano` if you prefer).
+- **`sudo`**: Allow a regular user to run commands with administrative (root) privileges. If you choose to install `base-devel`, you do **not** need to list `sudo` separately, as it is already included inside this package.
+
+---
+
+### 3. Generate the File System Table (`fstab`)
+
+This tells the system where all those subvolumes are.
+
+```bash
+genfstab -U /mnt >> /mnt/etc/fstab
+```
+
+***Action**:* fstab Verification
+
+Before moving forward, it is critical to verify that your filesystem table was generated correctly. Run:
+
+```bash
+cat /mnt/etc/fstab
+```
+
+**What to look for:** On a Btrfs system like this one, your `fstab` will look a bit different than a traditional setup.
+
+- **The UUID:** You should see the same long **UUID** string repeated for almost every entry. This is because all your subvolumes (`@`, `@home`, `@log`, etc.) live on the same physical partition.
+- **Subvolume Flags:** Look at the options column (usually the 4th column). Each line must have a unique `subvol=@...` entry matching the subvolumes you created in Phase 3.
+- **Mount Points:** Ensure the paths match your intended layout (e.g., the line with `subvol=@log` should point to `/var/log`).
+
+![fstab_verification](images/fstab_verification.png)
+
+**Note :** Your UUID (the long string of letters and numbers) will be different from the one in the image. Don't copy it! Just verify that your UUID is consistent across all your Btrfs entries.
+
+---
+
+### 4. Enter the System (Chroot)
+
+Now that the "plumbing" is verified, we are going to "step inside" your new installation. From this point on, any command you run happens on your NVMe drive, not the USB stick.
+
+```bash
+arch-chroot /mnt
+```
+
+***Success*:** Your terminal prompt will change to `[root@archiso /]#`. You are now officially configuring your new OS!
+
+---
