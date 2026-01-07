@@ -900,3 +900,27 @@ sudo pacman -Syu
 ```
 
 ---
+
+### 5. Verify Your Services
+
+Before you move on run these commands to ensure your essential performance and maintenance services are running correctly:
+
+1. **The "Master Schedule" Check:** 
+
+	Run this to see all your automated tasks (Reflector, Trim, etc.) in one list.
+	
+	```bash
+	systemctl list-timers --all
+	```
+	
+	****What to look for:** Ensure `fstrim.timer` and `reflector.timer` are listed in the `ACTIVATES` column.**
+
+2. **The Hardware & Performance Check:** 
+
+	Since these aren't "timers," we check them individually.
+	
+	- **zRAM:** `zramctl` (Confirms your RAM-based swap is active).
+	- **Audio:** `wpctl status` (Confirms PipeWire has "claimed" your speakers).
+	- **Network:** `nmcli device` (Confirms you are online and managed).
+
+---
