@@ -448,3 +448,176 @@ arch-chroot /mnt
 ***Success*:** Your terminal prompt will change to `[root@archiso /]#`. You are now officially configuring your new OS!
 
 ---
+
+## Phase 5: System Configuration
+
+Now we install the core drivers and utilities while configuring the time, language, and performance settings that make the system truly yours."
+
+### 1. The Essentials (The Bulk Command)
+
+This command installs the "foundation" of your system, including the bootloader, hardware drivers, and core utilities required for a modern, functional desktop.
+
+**Note:** Use `intel-ucode` for Intel CPUs or `amd-ucode` for AMD.
+
+```bash
+pacman -S grub efibootmgr zram-generator intel-ucode reflector linux-headers bluez bluez-utils xdg-utils xdg-user-dirs network-manager-applet pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber
+```
+
+##### Package Breakdown
+
+- **`grub` &amp; `efibootmgr`**: The core tools required to create and manage your boot menu so the motherboard can find Arch.
+- **`zram-generator`**: The modern way to handle swap, compressing data in your RAM to keep the system fast under heavy load.
+- **`intel-ucode`**: Critical stability and security patches for your CPU (essential for modern hardware).
+- **`reflector`**: A script that fetches and sorts the fastest Arch mirrors to keep your future updates speedy.
+- **`linux-headers`**: Required if you ever plan to install "out-of-tree" drivers like VirtualBox or certain Wi-Fi/NVIDIA drivers.
+- **`bluez` &amp; `bluez-utils`**: The "brain" and tools for Bluetooth. You'll need these to connect your headphones or mouse.
+- **`xdg-user-dirs`**: Automatically creates the standard folders in your home directory (Documents, Downloads, Music, etc.) once you log in.
+- **`xdg-utils`**: A set of command-line tools that help different apps talk to each other (e.g., "open this link in the browser").
+- **`network-manager-applet`**: Provides the Wi-Fi icon in your future desktop environment so you don't have to use the terminal for Wi-Fi anymore. (requires a GUI to actually show up)
+- **`pipewire`**: The main "engine" that handles audio and video streams.
+- **`pipewire-pulse`**: A "translator" that lets apps designed for PulseAudio (like Spotify or Discord) work with PipeWire.
+- **`pipewire-alsa` &amp; `pipewire-jack`**: Ensures that even the oldest and the most professional audio apps can output sound.
+- **`wireplumber`**: The "brain" that manages the logic—it decides which speakers to use when you plug in headphones.
+
+1. Useful packages you can add
+
+- Power Management (For Laptops)
+
+	If this is a laptop, your battery will drain much faster than it should without a power daemon.
+	
+	- **Package:** `power-profiles-daemon`
+	- **Why:** This is the modern standard used by GNOME and KDE. It lets you switch between "Power Saver," "Balanced," and "Performance" modes easily.
+	- **Enable:** `systemctl enable power-profiles-daemon`
+	
+- Printer Support (The "Just in Case")
+
+	Even if you don't own a printer, you'll eventually need to "Print to PDF" or connect to a wireless printer at a library or office.
+	
+	- **Packages:** `cups` and `avahi`
+	- **Why:** `cups` is the printing engine; `avahi` is what allows your computer to "see" printers (and other devices) on your Wi-Fi network without typing in IP addresses.
+	- **Enable:** `systemctl enable cups` and `systemctl enable avahi-daemon`
+	
+- Basic Graphics Drivers (The "Visual Brain")
+
+	We have the CPU patches, but your screen needs to know how to talk to your GPU (Intel, AMD, or NVIDIA) for smooth animations.
+
+	- **Packages:**
+	    
+	    
+	    - **Intel:** `vulkan-intel` and `intel-media-driver`
+	        
+	        
+	        - *Note: `vulkan-intel` handles the graphics, while `intel-media-driver` allows your hardware to decode video (like YouTube/Netflix) so your CPU doesn't have to work as hard.*
+	    - **AMD:** `vulkan-radeon`
+	    - **NVIDIA:** `nvidia` (or `nvidia-open` for newer cards)
+	- **Why:** This ensures your future Desktop Environment (like GNOME or KDE) uses hardware acceleration. Without this, your CPU has to do all the visual work, making the system feel "laggy."
+
+---
+
+### 2. Localization, Time and Keyboard
+
+This section tells Arch your timezone, your language, and how your keyboard is laid out. You must adjust these commands to match your specific location.
+
+1. Set Your Timezone:
+	Replace America/Edmonton with your actual Region and City. You can find your options by looking in /usr/share/zoneinfo/.
+
+	```bash
+	ln -sf /usr/share/zoneinfo/America/Edmonton /etc/localtime
+	```
+
+3. Update the hardware clock to stay in sync:
+
+	```bash
+	hwclock --systohc
+	```
+
+4. Set Language (Locale):
+   If you do not want US English, replace en_US.UTF-8 with your preferred language from the list in /etc/locale.gen.
+
+	```bash
+	echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+	```
+
+	***Note***: This adds the US English locale to the generation list without opening an editor.
+
+6. Generate the language files:
+
+	```bash
+	locale-gen
+	```
+
+7. Create Locale Config:
+   This sets the system language.
+
+	```bash
+	echo "LANG=en_US.UTF-8" > /etc/locale.conf
+	```
+
+9. Set Console Keyboard Layout:
+   The default is us. If you use a different layout (like uk or br-abnt2), replace it here so your keys work correctly in the terminal.
+
+	```bash
+	echo "KEYMAP=us" > /etc/vconsole.conf
+	```
+
+---
+
+### 3. Network Identity
+
+1. Give your computer a name:
+
+	```bash
+	echo "arch-linux" > /etc/hostname
+	```
+	
+2. Edit your hosts file:
+	
+	```bash
+	nvim /etc/hosts
+	```
+	
+3. Add this text to the file:
+	
+	```
+	127.0.0.1   localhost
+	::1         localhost
+	127.0.1.1   arch-linux.localdomain   arch-linux
+	```
+
+	**Note:** Ensure "arch-linux" matches the name you chose in the `/etc/hostname` file above.
+
+---
+
+### 4. High-Performance zRAM
+
+Instead of a slow swap file on your disk, we use zRAM. This creates a compressed "virtual drive" inside your RAM that acts as an ultra-fast swap area. Since we just installed the generator, let's configure it.
+
+1. Open the file:
+
+	```bash
+	nvim /etc/systemd/zram-generator.conf
+	```
+
+2. Paste this in:
+
+	```ini
+	[zram0]
+	zram-size = min(ram / 2, 4096)
+	compression-algorithm = zstd
+	swap-priority = 100
+	fs-type = swap
+	```
+ 	
+	Configuration Breakdown:
+	
+	`[zram0]`: Defines the name of the virtual device created in your memory.
+	
+	`zram-size = min(ram / 2, 4096)`: Sets the swap size to half of your physical RAM, but caps it at 4GB to prevent exhausting your memory.
+	
+	`compression-algorithm = zstd`: Uses the zstd algorithm, which offers the best balance between high compression ratios and low CPU overhead.
+	
+	`swap-priority = 100`: Tells Linux to use this compressed RAM space first before attempting to use any slower swap files on the physical disk.
+	
+	`fs-type = swap`: Formats the virtual device as a swap area so the Linux kernel knows it can store "overflow" memory pages there.
+
+---
