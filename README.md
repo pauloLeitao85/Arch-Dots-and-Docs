@@ -40,29 +40,29 @@ Before touching your USB drive, ensure the file is perfect.
 
 Now we move the data from your computer to the USB drive.
 
-#### A. Identify the Drive
+>#### 1. Identify the Drive
 
-Plug in your USB and identify its path. **Be extremely careful here; choosing the wrong drive will erase it.**
+>Plug in your USB and identify its path. **Be extremely careful here; choosing the wrong drive will erase it.**
 
- Run:
+>Run:
 
-```bash
-lsblk
-```
+>```bash
+>lsblk
+>```
 
- ***Note***: Your USB is usually /dev/sdb or /dev/sdc.
+ >***Note***: Your USB is usually /dev/sdb or /dev/sdc.
 
-#### B. The "Imaging" Command
+>#### 2. The "Imaging" Command
 
-We use the `dd` (Data Duplicator or Disk Destroyer) command. Replace `/dev/sdX` with your actual USB path (e.g., `/dev/sdb`).
+>We use the `dd` (Data Duplicator or Disk Destroyer) command. Replace `/dev/sdX` with your actual USB path (e.g., `/dev/sdb`).
 
-##### Preparing the Drive
+>>##### Preparing the Drive
 
-First, unmount the partition:
+>>First, unmount the partition:
 
-```bash
-umount /dev/sdb
-```
+>>```bash
+>>umount /dev/sdb
+>>```
 
 ##### Flashing the ISO
 
