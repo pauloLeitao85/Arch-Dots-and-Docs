@@ -99,13 +99,13 @@ Now we move the data from your computer to the USB drive.
 
 	If not do this steps:
 
-	1) **Enter the utility:** `iwctl`
-	2. **Identify your device:** `device list` (Usually `wlan0`).
+	1. **Enter the utility:** `iwctl`
+	2. **Identify your device:** `device list` (Usually `wlan0`)
 	3. **Scan for networks:** `station wlan0 scan`
 	4. **List networks:** `station wlan0 get-networks`
 	5. **Connect to your SSID:** `station wlan0 connect YOUR_SSID`
-	6. **Enter Password:** Type your Wi-Fi key when prompted.
-	7. **Exit:** Type `exit`.
+	6. **Enter Password:** Type your Wi-Fi key when prompted
+	7. **Exit:** Type `exit`
 
 	**Verification:** Run `ping -c 3 google.com`. If you get replies, you’re online!
 
