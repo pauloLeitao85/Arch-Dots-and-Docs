@@ -81,3 +81,12 @@ sudo dd bs=4M if=/full/path/archlinux-202X.XX.XX-x86_64.iso of=/dev/sdX conv=fsy
 **Note**: `of=/dev/sdX`: Ensure this is the **drive** (e.g. sdb), not a **partition** (e.g. sdb1).
 
 ---
+### 4. Booting the ISO
+
+1. Insert your prepared USB drive into the target machine.
+2. Restart and enter your **BIOS/UEFI** (usually by tapping `F2`, `F12`, `Del`, or `Esc`).
+3. **Disable Secure Boot** (Arch's official ISO doesn't support it out of the box).
+4. Select your USB drive as the primary boot device.
+5. Choose **"Arch Linux install medium (x86\_64, UEFI)"** from the menu.
+
+---
