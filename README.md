@@ -100,16 +100,22 @@ Now we move the data from your computer to the USB drive.
 	If not do this steps:
 
 	a. **Enter the utility:** `iwctl`
-	b. **Identify your device:** `device list` (Usually `wlan0`).
+
+	b. **Identify your device:** `device list` (Usually `wlan0`)
+.
 	c. **Scan for networks:** `station wlan0 scan`
+
 	d. **List networks:** `station wlan0 get-networks`
+
 	e. **Connect to your SSID:** `station wlan0 connect YOUR_SSID`
+
 	f. **Enter Password:** Type your Wi-Fi key when prompted.
+
 	g. **Exit:** Type `exit`.
 
 	**Verification:** Run `ping -c 3 google.com`. If you get replies, you’re online!
 
-2. Synchronize the System Clock
+3. Synchronize the System Clock
 
 	*Update system clock:*
 
