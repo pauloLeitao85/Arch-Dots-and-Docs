@@ -40,45 +40,44 @@ Before touching your USB drive, ensure the file is perfect.
 
 Now we move the data from your computer to the USB drive.
 
->#### 1. Identify the Drive
+1. Identify the Drive
 
->Plug in your USB and identify its path. **Be extremely careful here; choosing the wrong drive will erase it.**
+	Plug in your USB and identify its path. **Be extremely careful here; choosing the wrong drive will erase it.**
 
->Run:
+	Run:
 
->```bash
->lsblk
->```
+	```bash
+	lsblk
+	```
+	***Note***: Your USB is usually /dev/sdb or /dev/sdc.
 
- >***Note***: Your USB is usually /dev/sdb or /dev/sdc.
+2. The "Imaging" Command
 
->#### 2. The "Imaging" Command
+	We use the `dd` (Data Duplicator or Disk Destroyer) command. Replace `/dev/sdX` with your actual USB path (e.g., `/dev/sdb`).
 
->We use the `dd` (Data Duplicator or Disk Destroyer) command. Replace `/dev/sdX` with your actual USB path (e.g., `/dev/sdb`).
+	##### Preparing the Drive
 
->>##### Preparing the Drive
+	First, unmount the partition:
 
->>First, unmount the partition:
+	```bash
+	umount /dev/sdb
+	```
 
->>```bash
->>umount /dev/sdb
->>```
+	##### Flashing the ISO
 
-##### Flashing the ISO
+	Now, we'll use `dd`. This command will take the input file (`if`)—your new Arch ISO—and write it to the output file (`of`)—your USB drive.
 
-Now, we'll use `dd`. This command will take the input file (`if`)—your new Arch ISO—and write it to the output file (`of`)—your USB drive.
+	**The command structure looks like this:**
 
-**The command structure looks like this:**
+	```bash
+	sudo dd bs=4M if=/full/path/archlinux-202X.XX.XX-x86_64.iso of=/dev/sdX conv=fsync oflag=direct status=progress
+	```
 
-```bash
-sudo dd bs=4M if=/full/path/archlinux-202X.XX.XX-x86_64.iso of=/dev/sdX conv=fsync oflag=direct status=progress
-```
+	- `bs=4M`: Sets the block size to 4 Megabytes for faster writing. ⚡
+	- `conv=fsync`: Ensures all data is physically written to the drive before the command finishes. 💾
+	- `status=progress`: Shows you a live update of the transfer speed and time. 📊
 
-- `bs=4M`: Sets the block size to 4 Megabytes for faster writing. ⚡
-- `conv=fsync`: Ensures all data is physically written to the drive before the command finishes. 💾
-- `status=progress`: Shows you a live update of the transfer speed and time. 📊
-
-**Note**: `of=/dev/sdX`: Ensure this is the **drive** (e.g. sdb), not a **partition** (e.g. sdb1).
+	**Note**: `of=/dev/sdX`: Ensure this is the **drive** (e.g. sdb), not a **partition** (e.g. sdb1).
 
 ---
 ### 4. Booting the ISO
