@@ -106,6 +106,7 @@ Now we move the data from your computer to the USB drive.
 	5. **Connect to your SSID:** `station wlan0 connect YOUR_SSID`
 	6. **Enter Password:** Type your Wi-Fi key when prompted.
 	7. **Exit:** Type `exit`.
+	
 	**Verification:** Run `ping -c 3 google.com`. If you get replies, you’re online!
 
 3. Synchronize the System Clock
