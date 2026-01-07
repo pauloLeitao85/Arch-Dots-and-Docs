@@ -138,22 +138,22 @@ Installation is easier when you can copy-paste commands from your main computer.
 
 1. **Set a temporary root password (t**his password is only for the **live session):**
     
-```bash
-passwd
-```
+	```bash
+	passwd
+	```
     
 **Note:** This is only for the **live session**. It disappears when you reboot and won't affect your final system.
 
 2. **Start the SSH service:**
     
-```bash
-systemctl start sshd
-```
+	```bash
+	systemctl start sshd
+	```
 3. **Find your IP address:**
     
-```bash
-ip addr show wlan0
-```
+	```bash
+	ip addr show wlan0
+	```
     
 *Look for the number after `inet` (e.g., `192.168.1.15`).*
 
