@@ -17,13 +17,13 @@ Before touching your USB drive, ensure the file is perfect.
 
 #### A. Integrity Check
 
-	Run this to ensure the file wasn't corrupted during the download:
+Run this to ensure the file wasn't corrupted during the download:
 
-	```bash
-	sha256sum -c sha256sums.txt
-	```
+```bash
+sha256sum -c sha256sums.txt
+```
 
-	**Note:** You may see errors for other files; as long as it says `archlinux-		202x...iso: OK`, you are safe.
+**Note:** You may see errors for other files; as long as it says `archlinux-		202x...iso: OK`, you are safe.
 
 #### B. Authenticity Check
 
@@ -136,7 +136,7 @@ timedatectl status
 
 Installation is easier when you can copy-paste commands from your main computer.
 
-a. **Set a temporary root password (t**his password is only for the **live session):**
+1. **Set a temporary root password (t**his password is only for the **live session):**
     
 	```bash
 	passwd
@@ -144,12 +144,12 @@ a. **Set a temporary root password (t**his password is only for the **live sessi
     
 	**Note:** This is only for the **live session**. It disappears 	when you reboot and won't affect your final system.
 
-b. **Start the SSH service:**
+2. **Start the SSH service:**
     
 	```bash
 	systemctl start sshd
 	```
-c. **Find your IP address:**
+3. **Find your IP address:**
     
 	```bash
 	ip addr show wlan0
@@ -157,7 +157,7 @@ c. **Find your IP address:**
     
 	*Look for the number after `inet` (e.g., `192.168.1.15`).*
 
-d. **Connect from your OTHER computer:** Open your terminal on your daily-driver machine and type:
+4. **Connect from your OTHER computer:** Open your terminal on your daily-driver machine and type:
     
     ```bash
     ssh root@192.168.1.15
