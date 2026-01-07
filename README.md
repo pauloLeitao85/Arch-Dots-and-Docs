@@ -132,30 +132,38 @@ Now we move the data from your computer to the USB drive.
 Installation is easier when you can copy-paste commands from your main computer.
 
 1. **Set a temporary root password (t**his password is only for the **live session):**
-    
+
 	```bash
-	passwd
+	 passwd
 	```
     
-	**Note:** This is only for the **live session**. It disappears 	when you reboot and won't affect your final system.
-
+    **Note:** This is only for the **live session**. It disappears when you reboot and won't affect your final system.
 2. **Start the SSH service:**
-    
 	```bash
-	systemctl start sshd
-	```
+    systemctl start sshd
+    ```
 3. **Find your IP address:**
-    
 	```bash
-	ip addr show wlan0
-	```
+    ip addr show wlan0
+    ```
     
-	*Look for the number after `inet` (e.g., `192.168.1.15`).*
-
+    *Look for the number after `inet` (e.g., `192.168.1.15`).*
 4. **Connect from your OTHER computer:** Open your terminal on your daily-driver machine and type:
     
     ```bash
     ssh root@192.168.1.15
     ```
+
+---
+
+### 7. Verify UEFI Mode
+
+We ensure the system is booted in UEFI mode, as `systemd-boot` requires it.
+
+```bash
+ls /sys/firmware/efi/efivars
+```
+
+*Explanation:* If this directory exists and is populated, you are in UEFI mode. If not, stop and check your BIOS settings.
 
 ---
