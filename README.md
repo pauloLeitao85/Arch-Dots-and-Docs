@@ -621,3 +621,116 @@ Instead of a slow swap file on your disk, we use zRAM. This creates a compressed
 	`fs-type = swap`: Formats the virtual device as a swap area so the Linux kernel knows it can store "overflow" memory pages there.
 
 ---
+
+## Phase 6: Mkinitcpio &amp; Bootloader
+
+This is the critical step for booting an encrypted drive.
+
+### 1. Configure Mkinitcpio
+
+We need to tell Arch to include the tools for encryption and the Btrfs filesystem in the initial boot process.
+
+1. **Open the configuration:**
+
+	```
+	nvim /etc/mkinitcpio.conf
+	```
+
+2. **Edit the MODULES line:** Find the `MODULES=()` line. and add btrfs to it:
+
+	```
+	MODULES=(btrfs)
+	```
+
+3. ****Edit the HOOKS line:** Find the `HOOKS=(...)` line. It must look exactly like this:**
+
+	```
+	HOOKS=(base systemd autodetect microcode modconf kms keyboard keymap sd-vconsole sd-encrypt block filesystems fsck)
+	```
+
+	**Note:** We use `sd-encrypt` because it integrates perfectly with the modern `systemd` boot process we are building.
+
+4. **Generate the images:**
+
+	```bash
+	mkinitcpio -P
+	```
+
+---
+
+### 2. The "Gatekeeper" (GRUB)
+
+Now we configure the bootloader to find your specific encrypted partition.
+
+1. **Find your Partition UUID:** Run this command to get the unique ID of your LUKS partition (`/dev/nvme0n1p2`):
+
+	```bash
+	blkid -s UUID -o value /dev/nvme0n1p2
+	```
+
+	**Tip:** Copy this long string carefully.
+
+2. **Edit GRUB's configuration:**
+
+	```bash
+	nvim /etc/default/grub
+	```
+
+3. **Set the Boot Parameters:** 
+	Find the line `GRUB_CMDLINE_LINUX_DEFAULT` and change it to (paste your UUID where indicated):
+
+	```
+	GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet rd.luks.name=YOUR_UUID_HERE=cryptroot root=/dev/mapper/cryptroot rootflags=subvol=@"
+	```
+
+4. **Install GRUB to the motherboard:**
+
+	```bash
+	grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+	```
+
+5. **Generate the final config file:**
+
+	```bash
+	grub-mkconfig -o /boot/grub/grub.cfg
+	```
+
+---
+
+### 3. User Setup
+
+Before we leave, we need to create the people who will live in this system.
+
+1. **Set the Root Password**:
+
+	This is the "Master" password for the entire system.
+
+	```bash
+	passwd
+	```
+
+2. **Create Your User**:
+
+	Replace `paulo` with your preferred username.
+
+	```bash
+	useradd -m -G wheel paulo
+	```
+
+3. **Set the User Password:**
+
+	```bash
+	passwd paulo
+	```
+
+4. **Grant Administrative Privileges (Sudo)**:
+ 
+	Since you installed `sudo` in Phase 4, you need to tell it that your user is allowed to use it.
+	
+	```bash
+	EDITOR=nvim visudo
+	```
+
+	**Action:** Find the line `%wheel ALL=(ALL:ALL) ALL` and remove the `#` from the front. Save and exit (`:wq`).
+
+---
