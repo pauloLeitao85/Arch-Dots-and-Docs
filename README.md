@@ -30,7 +30,8 @@ Navigate to the [Arch Linux Download page](https://archlinux.org/download/) and 
 
 ---
 
-</div>### 2. Verification (The Security Check)
+</div>
+### 2. Verification (The Security Check)
 
 Before touching your USB drive, ensure the file is perfect.
 
