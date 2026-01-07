@@ -88,44 +88,43 @@ Now we move the data from your computer to the USB drive.
 ---
 ### 5. Network &amp; Time
 
-#### A. Connecting to Wi-Fi (if needed)
+1. Connecting to Wi-Fi (if needed)
 
-Once you see the `root@archiso #` prompt, you need internet to download the system files.
+	Once you see the `root@archiso #` prompt, you need internet to download the system files.
+	If you know your device name and network name run this command:
 
-If you know your device name and network name run this command:
+	```bash
+	iwctl --passphrase "YOUR_PASSWORD" station wlan0 connect "YOUR_SSID"
+	```
 
-```bash
-iwctl --passphrase "YOUR_PASSWORD" station wlan0 connect "YOUR_SSID"
-```
+	If not do this steps:
 
-If not do this steps:
+	1. **Enter the utility:** `iwctl`
+	2. **Identify your device:** `device list` (Usually `wlan0`).
+	3. **Scan for networks:** `station wlan0 scan`
+	4. **List networks:** `station wlan0 get-networks`
+	5. **Connect to your SSID:** `station wlan0 connect YOUR_SSID`
+	6. **Enter Password:** Type your Wi-Fi key when prompted.
+	7. **Exit:** Type `exit`.
 
-1. **Enter the utility:** `iwctl`
-2. **Identify your device:** `device list` (Usually `wlan0`).
-3. **Scan for networks:** `station wlan0 scan`
-4. **List networks:** `station wlan0 get-networks`
-5. **Connect to your SSID:** `station wlan0 connect YOUR_SSID`
-6. **Enter Password:** Type your Wi-Fi key when prompted.
-7. **Exit:** Type `exit`.
+	**Verification:** Run `ping -c 3 google.com`. If you get replies, you’re online!
 
-**Verification:** Run `ping -c 3 google.com`. If you get replies, you’re online!
+2. Synchronize the System Clock
 
-#### B. Synchronize the System Clock
+	*Update system clock:*
 
-*Update system clock:*
-
-```bash
-timedatectl set-ntp true
-```
-
-*Check status with:*
-
-```bash
-timedatectl status
-```
+	```bash
+	timedatectl set-ntp true
+	```
+	
+	*Check status with:*
+	
+	```bash
+	timedatectl status
+	```
 
 
-- *Explanation:* `timedatectl` synchronizes your clock. If your clock is wrong, SSL certificates (used by HTTPS websites/mirrors) will appear invalid, and package downloads will fail.
+	- *Explanation:* `timedatectl` synchronizes your clock. If your clock is wrong, SSL certificates (used by HTTPS websites/mirrors) 	will appear invalid, and package downloads will fail.
 
 ---
 ### 6. Setting up the SSH Bridge (Optional)
