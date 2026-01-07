@@ -16,7 +16,7 @@ Automated Protection: Pre-configured Snapper timers and snap-pac hooks for "set 
 ⚖️ Disclaimer
 I am a Linux enthusiast, not a professional. This guide is a record of what works for my system. Use it as a reference, but always double-check the Arch Wiki.
 
-# Installation
+# Arch Linux Installation
 
 ## Phase 1: Preparation
 
