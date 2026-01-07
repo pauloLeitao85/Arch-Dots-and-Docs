@@ -11,6 +11,7 @@ Navigate to the [Arch Linux Download page](https://archlinux.org/download/) and 
 - **The Signature:** `archlinux-202X.XX.XX-x86_64.iso.sig`
 
 ---
+
 ### 2. Verification (The Security Check)
 
 Before touching your USB drive, ensure the file is perfect.
@@ -36,6 +37,7 @@ Before touching your USB drive, ensure the file is perfect.
 	**Success:** Look for `gpg: Good signature from "[Developer Name]"`. Ignore the warning 	about "not certified with a trusted signature"—that is standard behavior for GPG.
 
 ---
+
 ### 3. Creating the Bootable USB
 
 Now we move the data from your computer to the USB drive.
@@ -77,6 +79,7 @@ Now we move the data from your computer to the USB drive.
 	**Note**: `of=/dev/sdX`: Ensure this is the **drive** (e.g. sdb), not a **partition** (e.g. sdb1).
 
 ---
+
 ### 4. Booting the ISO
 
 1. Insert your prepared USB drive into the target machine.
@@ -86,6 +89,7 @@ Now we move the data from your computer to the USB drive.
 5. Choose **"Arch Linux install medium (x86\_64, UEFI)"** from the menu.
 
 ---
+
 ### 5. Network &amp; Time
 
 1. Connecting to Wi-Fi (if needed)
@@ -127,6 +131,7 @@ Now we move the data from your computer to the USB drive.
 	*Explanation:* `timedatectl` synchronizes your clock. If your clock is wrong, SSL certificates (used by HTTPS websites/mirrors) will appear invalid, and package downloads will fail.
 
 ---
+
 ### 6. Setting up the SSH Bridge (Optional)
 
 Installation is easier when you can copy-paste commands from your main computer.
@@ -165,5 +170,76 @@ ls /sys/firmware/efi/efivars
 ```
 
 *Explanation:* If this directory exists and is populated, you are in UEFI mode. If not, stop and check your BIOS settings.
+
+---
+
+## Phase 2: Partitioning &amp; Encryption
+
+This is the most technical part of the build. We are creating a secure, high-performance foundation.
+
+### 1. Wipe metadata
+
+**Warning:** This will erase all data on `/dev/nvme0n1`(or your drive device).
+
+```bash
+sgdisk --zap-all /dev/nvme0n1
+```
+
+---
+
+### 2. Partitioning
+
+We will use `cfdisk` to create a simple, robust partition table.
+
+Run `cfdisk /dev/nvme0n1`. Create the following:
+
+1. **Label Type:** Select `gpt`.
+2. Create a **New** partitions:
+
+| Partition | Size | Type | Explanation |
+| :--- | :--- | :--- | :--- |
+| `/dev/nvme0n1p1` | **1 GiB** | EFI System | Large size to hold multiple Kernel images and rescue images. |
+| `/dev/nvme0n1p2` | **Remainder** | Linux root (x86-64) | This will hold our Encrypted Container. |
+ 3. Select "**Write**" -&gt; "**yes**" -&gt; "**Quit**".
+
+**Pro-Tip: Why "Linux root (x86-64)"?** We use this specific type instead of the generic "Linux filesystem" to follow modern standards. It allows the system to automatically identify your drive as the "root" partition, which adds a layer of redundancy if your configuration files ever have issues.
+
+---
+
+### 3. Format EFI Partition
+
+```bash
+mkfs.fat -F 32 /dev/nvme0n1p1
+```
+
+***Explanation**:* The UEFI motherboard firmware can only read FAT32 filesystems. This is where the bootloader lives.
+
+---
+
+### 4. Encrypt Root Partition (LUKS2)
+
+We encrypt the raw partition before putting a filesystem on it.
+
+```bash
+cryptsetup luksFormat /dev/nvme0n1p2
+```
+
+ ***Explanation**:* Initializes the partition with LUKS2 encryption. You will set a passphrase here.
+ 
+***Note**:* By default, this uses **Argon2id**, the modern memory-hard key derivation function (highly secure). You **must** type `YES` in all capital letters.
+
+---
+
+### 5. Unlock Partition
+
+```bash
+cryptsetup open /dev/nvme0n1p2 cryptroot
+```
+
+***Explanation:*** Decrypts the drive and maps it to `/dev/mapper/cryptroot`. The system treats `cryptroot` as a standard unencrypted drive from now on.
+
+***Verification Step:*** Run `lsblk`. You should now see `cryptroot` nested under your second partition:
+
+[![image.png](https://bookstack.spiderhulk.net/uploads/images/gallery/2026-01/scaled-1680-/XLSimage.png)](https://bookstack.spiderhulk.net/uploads/images/gallery/2026-01/XLSimage.png)
 
 ---
