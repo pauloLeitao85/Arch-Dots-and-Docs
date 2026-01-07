@@ -734,3 +734,23 @@ Before we leave, we need to create the people who will live in this system.
 	**Action:** Find the line `%wheel ALL=(ALL:ALL) ALL` and remove the `#` from the front. Save and exit (`:wq`).
 
 ---
+
+### 4. Enable Services
+
+Ensure your system is ready to connect to the world on the first boot.
+
+```bash
+systemctl enable NetworkManager
+systemctl enable bluetooth
+systemctl enable fstrim.timer
+```
+
+**The "Enable" Breakdown:**
+
+| Command | Simple Explanation | Why it’s Essential |
+| :--- | :--- | :--- |
+| **`systemctl enable NetworkManager`** | Starts the internet manager automatically at boot. | Prevents being stuck in a terminal with no Wi-Fi or Ethernet to download updates. |
+| **`systemctl enable bluetooth`** | Activates the Bluetooth stack in the background. | Without this, wireless mice, keyboards, or headphones will not connect. |
+| **`systemctl enable fstrim.timer`** | Schedules a weekly "cleanup" (Trim) of your drive. | Provides automatic maintenance to keep your NVMe/SSD fast and healthy. |
+
+---
