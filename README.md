@@ -15,13 +15,13 @@ Navigate to the [Arch Linux Download page](https://archlinux.org/download/) and 
 
 Before touching your USB drive, ensure the file is perfect.
 
-	#### A. Integrity Check
+#### A. Integrity Check
 
-	Run this to ensure the file wasn't corrupted during the download:
+Run this to ensure the file wasn't corrupted during the download:
 
-		```bash
-		sha256sum -c sha256sums.txt
-		```
+```bash
+	sha256sum -c sha256sums.txt
+```
 
 		 **Note:** You may see errors for other files; as long as it says `archlinux-		202x...iso: OK`, you are safe.
 
