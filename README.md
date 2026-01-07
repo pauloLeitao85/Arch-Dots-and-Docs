@@ -15,25 +15,25 @@ Navigate to the [Arch Linux Download page](https://archlinux.org/download/) and 
 
 Before touching your USB drive, ensure the file is perfect.
 
-#### A. Integrity Check
+1. Integrity Check
+    
+	Run this to ensure the file wasn't corrupted during the download:
 
-Run this to ensure the file wasn't corrupted during the download:
+	```bash
+	sha256sum -c sha256sums.txt
+	```
 
-```bash
-sha256sum -c sha256sums.txt
-```
+	**Note:** You may see errors for other files; as long as it says `archlinux-			202x...iso: OK`, you are safe.
 
-**Note:** You may see errors for other files; as long as it says `archlinux-		202x...iso: OK`, you are safe.
+2. Authenticity Check
 
-#### B. Authenticity Check
+	Run this to ensure the file is officially from the Arch team:
 
-Run this to ensure the file is officially from the Arch team:
+	```bash
+	gpg --keyserver-options auto-key-retrieve --verify archlinux-202X.XX.XX-x86_64.iso.sig
+	```
 
-```bash
-gpg --keyserver-options auto-key-retrieve --verify archlinux-202X.XX.XX-x86_64.iso.sig
-```
-
-**Success:** Look for `gpg: Good signature from "[Developer Name]"`. Ignore the warning about "not certified with a trusted signature"—that is standard behavior for GPG.
+	**Success:** Look for `gpg: Good signature from "[Developer Name]"`. Ignore the warning 	about "not certified with a trusted signature"—that is standard behavior for GPG.
 
 ---
 ### 3. Creating the Bootable USB
