@@ -969,3 +969,50 @@ We will use **UFW** (Uncomplicated Firewall). It is the standard for "set and fo
 **What this does:** By setting a Default Deny policy for incoming traffic, you are creating a "one-way" security gate. Your system will track every request you send out (like opening a website) and allow the response back in, but it will silently drop any connection attempt initiated by an outside device. This effectively shields your open ports from scanners and unauthorized access while you are on untrusted networks.
 
 ---
+
+### 2. CPU Microcode Verification
+
+Microcode acts as a "firmware update" for your processor that the Linux kernel applies every time you boot. Because these patches fix hardware flaws like Spectre or Meltdown, ensuring they load early is vital.
+
+1. The "Success" Verification
+
+	```bash
+	journalctl -b | grep microcode
+	```
+
+	- **What to look for**: You should see microcode: updated early to revision 0x....
+
+	- **The "Early" part is key**: If it doesn't say "updated early," it means the kernel is patching the CPU too late in the boot process, leaving a small window of vulnerability.
+
+2. Verify the Package is Installed
+Depending on your hardware, you must have the correct package present.
+
+	- For Intel: `sudo pacman -S intel-ucode`.
+
+	- For AMD: `sudo pacman -S amd-ucode`.
+	
+3. Check the Bootloader Configuration
+Installing the package isn't enough; GRUB must be told to load that file before it loads the actual Linux kernel.
+
+	- **The Check**: Run ls /boot and ensure you see a file named intel-ucode.img or amd-ucode.img.
+
+	- **The GRUB Fix**: If your journalctl check fails, you must re-generate your GRUB config to "find" the microcode file:
+	
+		```
+		sudo grub-mkconfig -o /boot/grub/grub.cfg
+		```
+
+4. Deeper Hardware Check (The "Vulnerability" List)
+
+If you want to see exactly which hardware bugs your CPU is currently protected against, run this command:
+
+```
+tail /sys/devices/system/cpu/vulnerabilities/*
+```
+
+Look for these key indicators:
+* **"Mitigation: Microcode"**: Confirms the `ucode` package is correctly patching the hardware.
+* **"Not affected"**: Your specific CPU model isn't physically susceptible to that bug.
+* **"SMT vulnerable"**: This is standard for most modern Intel/AMD CPUs. It means the kernel is managing the risk, but the physical hardware architecture still shares resources between threads.
+
+---
