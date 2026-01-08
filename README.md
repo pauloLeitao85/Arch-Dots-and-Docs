@@ -1015,4 +1015,63 @@ Installing the package isn't enough; GRUB must be told to load that file before 
 	* **"Not affected"**: Your specific CPU model isn't physically susceptible to that bug.
 	* **"SMT vulnerable"**: You shouldn't worry. This is standard for most modern Intel/AMD CPUs. It means the kernel is managing the risk, but the physical hardware architecture still shares resources between threads.
 	
-	---
+---
+
+### 3. SSH Security
+
+If you enabled SSH to finish this installation, your system is currently listening for connections. Leaving it with default settings is an open invitation for automated "brute-force" bots.
+
+1. Key-Based Authentication (The Gold Standard)
+	Passwords can be guessed or cracked; a 4096-bit RSA key cannot.
+	
+	- On your client machine (the one you are connecting from), generate a key if you don't have one:
+		```
+		ssh-keygen -t ed25519 -C "your_email@example.com"
+		```
+	- Push that key to your Arch machine:
+		```
+		ssh-copy-id username@your_arch_ip
+		```
+2. Locking the "Configuration Gate"
+	Now that your key is installed, you can disable passwords and root access entirely.
+	
+	- **Edit the config**: `sudo nvim /etc/ssh/sshd_config`
+	- **Apply these "Hardened" settings:**
+		```
+		# Disable root login (Hackers always target 'root' first)
+		PermitRootLogin no
+		
+		# Disable password authentication (Only allow your physical key)
+		PasswordAuthentication no
+		
+		# Disable empty passwords
+		PermitEmptyPasswords no
+		```
+3. Extra Stealth: Change the Port (Optional)
+	Most bots scan Port 22. Changing this to a non-standard port (like 2222) will stop 99% of random automated attacks.
+	
+	- Change the Port: Find #Port 22 and change it to Port 2222.
+
+	- Update Firewall: If you do this, you must tell UFW: sudo ufw allow 2222/tcp.
+	
+4. Restart and Verify
+	```
+	sudo systemctl restart sshd
+	```
+	**PRO-TIP**: Keep your current terminal session open while you try to log in from a new one! If you made a mistake in the config, you can still fix it from the active session without being locked out.
+	
+5. SSH Defense Strategy:
+	We don't just "turn on" SSH; we harden the connection to ensure that only you can access the system.
+	
+	- Disable Root Login: Forces attackers to guess your specific username before they can even attempt a password.
+	- SSH Keys Only: Switches from "passwords" to "cryptographic keys," making traditional "Brute-Force" attacks mathematically impossible.
+	- Custom Port: Moves your SSH "door" to a non-standard location (like 2222), which stops 99% of automated scanners and bots.
+	
+
+---
+
+***Security Summary***
+
+This configuration represents the **essential minimum** required to secure a modern Arch Linux system. While you can always go deeper into hardening (MAC, AppArmor, or Sandboxing), the combination of **LUKS Encryption**, a **UFW Firewall**, **SSH hardening**, and **Microcode patches** provides a rock-solid foundation that protects your data from both physical theft and network-based threats.
+
+---
