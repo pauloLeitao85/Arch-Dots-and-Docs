@@ -1004,15 +1004,15 @@ Installing the package isn't enough; GRUB must be told to load that file before 
 
 4. Deeper Hardware Check (The "Vulnerability" List)
 
-If you want to see exactly which hardware bugs your CPU is currently protected against, run this command:
-
-```
-tail /sys/devices/system/cpu/vulnerabilities/*
-```
-
-Look for these key indicators:
-* **"Mitigation: Microcode"**: Confirms the `ucode` package is correctly patching the hardware.
-* **"Not affected"**: Your specific CPU model isn't physically susceptible to that bug.
-* **"SMT vulnerable"**: This is standard for most modern Intel/AMD CPUs. It means the kernel is managing the risk, but the physical hardware architecture still shares resources between threads.
-
----
+	If you want to see exactly which hardware bugs your CPU is currently protected against, run this command:
+	
+	```
+	tail /sys/devices/system/cpu/vulnerabilities/*
+	```
+	
+	Look for these key indicators:
+	* **"Mitigation: Microcode"**: Confirms the `ucode` package is correctly patching the hardware.
+	* **"Not affected"**: Your specific CPU model isn't physically susceptible to that bug.
+	* **"SMT vulnerable"**: This is standard for most modern Intel/AMD CPUs. It means the kernel is managing the risk, but the physical hardware architecture still shares resources between threads.
+	
+	---
