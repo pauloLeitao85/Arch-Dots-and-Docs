@@ -924,3 +924,48 @@ Before you move on run these commands to ensure your essential performance and m
 	- **Network:** `nmcli device` (Confirms you are online and managed).
 
 ---
+
+## Phase 8: System Hardening (Security)
+
+Encryption (LUKS) protects your data when your computer is stolen or powered off. **System Hardening** protects you while you are actually using the computer and connected to the internet.
+
+### 1. The Firewall (UFW)
+
+We will use **UFW** (Uncomplicated Firewall). It is the standard for "set and forget" security. It blocks all unauthorized "knocks" on your system's digital doors.
+
+1. Instal the UFW Firewall:
+
+	```bash
+	sudo pacman -S ufw
+	```
+
+2. Enable ans start (`--now`) the firewall:
+
+	```bash
+	sudo systemctl enable --now ufw
+	```
+
+
+****CRITICAL:** If you are currently connected via SSH, you must allow the SSH port before enabling the firewall, or you will be locked out!
+
+3. **First explicitly allow SSH:**
+
+	```bash
+	sudo ufw allow ssh
+	```
+
+4. **Eet the default "Stealth" rules:**
+
+	```bash
+	sudo ufw default deny incoming
+	sudo ufw default allow outgoing
+	```
+
+5. Turn it on
+	```
+	sudo ufw enable
+	```
+	
+**What this does:** By setting a Default Deny policy for incoming traffic, you are creating a "one-way" security gate. Your system will track every request you send out (like opening a website) and allow the response back in, but it will silently drop any connection attempt initiated by an outside device. This effectively shields your open ports from scanners and unauthorized access while you are on untrusted networks.
+
+---
