@@ -1108,6 +1108,8 @@ Even with SSH keys and a firewall, bots will "knock" on your ports thousands of 
 	| **bantime** | 10 Minutes | Long enough to discourage 99% of automated bot scripts. | Set to 24h or -1 (permanent) for persistent attackers. |
 	| **findtime** | 10 Minutes | The window of time the bouncer "remembers" failed attempts. | Increase to 1h to catch slow-moving bots that space out their guesses. |
 
+	***The "Set and Forget" Philosophy:***  For a personal laptop, the default settings provide elite protection without the risk of accidentally banning yourself forever. Only adjust these if you see persistent IPs flooding your logs.
+
 6. Verification: Is the Bouncer working?
 	Run this command to see who has been caught:
 	```
@@ -1115,7 +1117,26 @@ Even with SSH keys and a firewall, bots will "knock" on your ports thousands of 
 	```
 	- Success Look: You will see a count of "Currently banned" and a list of IP addresses that have been rejected.
 
-***The "Set and Forget" Philosophy:***  For a personal laptop, the default settings provide elite protection without the risk of accidentally banning yourself forever. Only adjust these if you see persistent IPs flooding your logs.
+7. How to Manually Ban an IP
+   
+	If you see a suspicious IP in your logs that hasn't reached the maxretry limit yet, you can ban it immediately:
+	```
+ 	sudo fail2ban-client set sshd banip <IP_ADDRESS>
+ 	```
+
+9. How to Manually Unban an IP
+    
+	If you (or a friend) accidentally get locked out, use this command from a different device (or the physical laptop) to clear the ban:
+	```
+	sudo fail2ban-client set sshd unbanip <IP_ADDRESS>
+	```
+
+10. The "Emergency" Unban (Unban Everything)
+     
+	If you are testing things and manage to ban multiple local devices, you can flush the entire list at once:
+	```
+ 	sudo fail2ban-client unban --all
+ 	```
 
 ---
 
