@@ -961,7 +961,7 @@ We will use **UFW** (Uncomplicated Firewall). It is the standard for "set and fo
 	sudo ufw default allow outgoing
 	```
 
-5. Turn it on
+5. ***Turn it on:**
 	```
 	sudo ufw enable
 	```
@@ -1013,6 +1013,6 @@ Installing the package isn't enough; GRUB must be told to load that file before 
 	Look for these key indicators:
 	* **"Mitigation: Microcode"**: Confirms the `ucode` package is correctly patching the hardware.
 	* **"Not affected"**: Your specific CPU model isn't physically susceptible to that bug.
-	* **"SMT vulnerable"**: This is standard for most modern Intel/AMD CPUs. It means the kernel is managing the risk, but the physical hardware architecture still shares resources between threads.
+	* **"SMT vulnerable"**: You shouldn't worry. This is standard for most modern Intel/AMD CPUs. It means the kernel is managing the risk, but the physical hardware architecture still shares resources between threads.
 	
 	---
