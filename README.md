@@ -1119,7 +1119,7 @@ Even with SSH keys and a firewall, bots will "knock" on your ports thousands of 
 
 ---
 
-**Why Local Hardening Matters (The "Inside" Threat)**
+### 5. **Why Local Hardening Matters (The "Inside" Threat)**
 
 Even with no open ports on your router, local hardening is essential for three main reasons:
 
@@ -1133,7 +1133,7 @@ Even with no open ports on your router, local hardening is essential for three m
 
 ---
 
-***Security Summary***
+### ***Security Summary***
 
 This configuration represents the **essential minimum** required to secure a modern Arch Linux system. While you can always go deeper into hardening (MAC, AppArmor, or Sandboxing), the combination of **LUKS Encryption**, **UFW Firewall**, **SSH hardening**, **Fail2ban**, and **Microcode patches** provides a rock-solid foundation that protects your data from both physical theft and network-based threats.
 
