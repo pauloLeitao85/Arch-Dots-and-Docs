@@ -1067,11 +1067,72 @@ If you enabled SSH to finish this installation, your system is currently listeni
 	- SSH Keys Only: Switches from "passwords" to "cryptographic keys," making traditional "Brute-Force" attacks mathematically impossible.
 	- Custom Port: Moves your SSH "door" to a non-standard location (like 2222), which stops 99% of automated scanners and bots.
 	
+---
+
+### 4. The Automated Bouncer (Fail2Ban)
+
+Even with SSH keys and a firewall, bots will "knock" on your ports thousands of times a day, filling your logs with junk. Fail2Ban acts as an active bouncer: it watches your logs in real-time and automatically bans any IP address that shows suspicious behavior.
+
+
+1. Install fail2ban:
+	```
+	sudo pacman -S fail2ban
+	```
+
+2. Enable the service:
+	```
+	sudo systemctl enable --now fail2ban
+	```
+
+3. Create a 'local' config (this prevents updates from overwriting your settings):
+	```
+	sudo nvim /etc/fail2ban/jail.local
+	```
+
+4. Paste this into the file:
+	```
+	[DEFAULT]
+	# Use UFW to ban IPs instead of raw iptables
+	banaction = ufw
+
+	[sshd]
+	enabled = true
+	```
+
+5. Understanding the Defaults vs. Customizing
+	Fail2Ban comes with "sane defaults" that are perfect for a personal workstation, but you can always "tighten the screws" later in your `jail.local` file.
+
+	| Setting | Default Value | Why it's enough | How to go "Hardcore" |
+	| :--- | :--- | :--- | :--- |
+	| **maxretry** | 5 Attempts | Gives you a "cushion" if you mistype your own password. | Drop to 2 or 3 if you only use SSH keys and never passwords. |
+	| **bantime** | 10 Minutes | Long enough to discourage 99% of automated bot scripts. | Set to 24h or -1 (permanent) for persistent attackers. |
+	| **findtime** | 10 Minutes | The window of time the bouncer "remembers" failed attempts. | Increase to 1h to catch slow-moving bots that space out their guesses. |
+
+6. Verification: Is the Bouncer working?
+	Run this command to see who has been caught:
+	```
+	sudo fail2ban-client status sshd
+	```
+	- Success Look: You will see a count of "Currently banned" and a list of IP addresses that have been rejected.
+
+***The "Set and Forget" Philosophy:***  For a personal laptop, the default settings provide elite protection without the risk of accidentally banning yourself forever. Only adjust these if you see persistent IPs flooding your logs.
+
+---
+
+**Why Local Hardening Matters (The "Inside" Threat)**
+
+- **The "Latte" Problem (Public Wi-Fi):** Your router doesn't go to the coffee shop with you. As soon as you connect to a public network, you are on the same "local" wire as everyone else in that shop. Without UFW and SSH hardening, your machine is wide open to anyone sitting near you.
+	
+- **The "Trojan Horse" (Infected Local Devices):** If another device in your home (like a smart bulb, a cheap camera, or a roommate's infected PC) gets compromised, it can scan your local network. Your router won't stop a threat that is already inside the house; only your local firewall and Fail2Ban will.
+
+- **UPnP and Automatic Hole-Punching:** Some apps use a protocol called UPnP to automatically tell your router to open a port without asking you. Local hardening ensures that even if a port is accidentally opened, your laptop is still a "hard target".
+
+- **Log Hygiene:** It stops bots from flooding your journalctl with failed login attempts, keeping your system logs clean and readable.
 
 ---
 
 ***Security Summary***
 
-This configuration represents the **essential minimum** required to secure a modern Arch Linux system. While you can always go deeper into hardening (MAC, AppArmor, or Sandboxing), the combination of **LUKS Encryption**, a **UFW Firewall**, **SSH hardening**, and **Microcode patches** provides a rock-solid foundation that protects your data from both physical theft and network-based threats.
+This configuration represents the **essential minimum** required to secure a modern Arch Linux system. While you can always go deeper into hardening (MAC, AppArmor, or Sandboxing), the combination of **LUKS Encryption**, **UFW Firewall**, **SSH hardening**, **Fail2ban**, and **Microcode patches** provides a rock-solid foundation that protects your data from both physical theft and network-based threats.
 
 ---
