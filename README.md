@@ -1120,6 +1120,7 @@ Even with SSH keys and a firewall, bots will "knock" on your ports thousands of 
 ---
 
 **Why Local Hardening Matters (The "Inside" Threat)**
+Even with no open ports on your router, local hardening is essential for three main reasons:
 
 - **The "Latte" Problem (Public Wi-Fi):** Your router doesn't go to the coffee shop with you. As soon as you connect to a public network, you are on the same "local" wire as everyone else in that shop. Without UFW and SSH hardening, your machine is wide open to anyone sitting near you.
 	
