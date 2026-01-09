@@ -1,5 +1,20 @@
 # Arch Linux Installation
 
+This guide focuses on building a highly resilient, encrypted workstation. Unlike a standard installation, this setup is designed for total system recovery. If you break a configuration file, mess up a driver installation, or a system update fails, you will be able to "undo" the damage in seconds.
+
+**The System Architecture**
+We are building the system using four core pillars:
+
+- **Security (LUKS2 & Hardening):** Your entire drive is protected by LUKS2 (Argon2id) encryption. Beyond the disk, we implement a "Defense in Depth" strategy including a UFW Firewall, Fail2Ban to stop brute-force attacks, and hardened SSH configurations.
+
+- **Flexibility (Btrfs "Lean" Layout):** We utilize a Flat Subvolume Layout that separates the Operating System (@) from your personal data (@home). By also isolating logs (@log) and package caches (@pkg_cache), your snapshots remain lean, fast, and organized.
+
+- **Safety (The "Undo" Button):** Using Snapper and GRUB-Btrfs, we create a bootable time machine. If the system fails to reach the desktop, you can boot into a previous working snapshot directly from the GRUB menu and perform a Surgical Rollback to restore order.
+
+- **Performance (Modern Optimizations):** This build is optimized for NVMe/SSD speed. We use zstd transparent compression to save space and increase disk lifespan, and zRAM to provide a high-speed, compressed swap area in memory.
+
+---
+
 ## Phase 1: Preparation
 
 ### 1. Gathering the Ingredients
