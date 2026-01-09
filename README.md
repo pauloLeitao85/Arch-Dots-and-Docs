@@ -1313,7 +1313,7 @@ We need to make a change we can actually "undo."
 	sudo snapper list
 	```
 
-	[![image.png](https://bookstack.spiderhulk.net/uploads/images/gallery/2026-01/scaled-1680-/wszimage.png)](https://bookstack.spiderhulk.net/uploads/images/gallery/2026-01/wszimage.png)
+	![lsblk_verification](images/snapper_list_verification.png)
 
 
 	**Note**: you will see something like this. The number we want is 2, the pre fastfetch installation.
