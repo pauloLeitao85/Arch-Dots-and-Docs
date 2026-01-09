@@ -1292,3 +1292,162 @@ To make your "Undo" button work from the GRUB menu.
 	```
 
 ---
+
+#### **5. The manual **Surgical Rollback Test**:**
+
+We need to make a change we can actually "undo."
+
+1. Create the "Dirty" state:
+
+	Install something small so we can see it disappear:
+	
+	```bash
+	sudo pacman -S fastfetch
+	```
+
+	(Verify it works by typing `fastfetch`).
+
+2. Check the snapshot number:
+
+	```bash
+	sudo snapper list
+	```
+
+	[![image.png](https://bookstack.spiderhulk.net/uploads/images/gallery/2026-01/scaled-1680-/wszimage.png)](https://bookstack.spiderhulk.net/uploads/images/gallery/2026-01/wszimage.png)
+
+
+	**Note**: you will see something like this. The number we want is 2, the pre fastfetch installation.
+
+3. Mount the top-level subvolume (ID 5):
+
+	```bash
+	sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt
+	```
+	
+	In the Btrfs filesystem, Subvolume ID 5 is the "Top-Level" or "Root" subvolume that is automatically created when you format the partition. You can think of it as the **Master Container** that holds everything else you've created, including your `@`, `@home`, and `@snapshots` subvolumes.
+
+	**How to Verify it on Your System**
+
+	While ID 5 is a hardcoded standard for the Btrfs root, you can see it for yourself by running this command:
+	
+	```bash
+	sudo btrfs subvolume list /
+	```
+
+	In the output, look at the **ID** column for the subvolume that has no parent (often listed with a path like `<top level>` or just `/`). Every other subvolume you see (like @ or @home) will show a top level or parent ID of 5, proving they are "children" of that master subvolume.
+
+	**Why we mount ID 5 for the Rollback**
+
+	Standard Linux mounting only shows you the "inside" of a specific subvolume (like your current @ system). To perform a "Surgical Rollback," you have to step outside the current system so you can move the folders around.
+	
+	- **Accessing the Siblings**: Mounting ID 5 allows you to see `@` and `@snapshots` side-by-side.
+	- **Renaming the Living**: You cannot delete or move a subvolume if you are currently "inside" it. By mounting ID 5 to `/mnt`, you are looking at the drive from the "outside," which gives you the power to run the `mv` (rename) command on the `@` subvolume.
+
+4. Quarantine the broken/dirty system:
+
+	```bash
+	sudo mv /mnt/@ /mnt/@_broken
+	```
+
+5. Create a read-write snapshot of your clean Snapshot 2 and name it @:
+
+	```bash
+	sudo btrfs subvolume snapshot /mnt/@snapshots/2/snapshot /mnt/@
+	```
+
+6. Unmount:
+
+	```bash
+	sudo umount /mnt
+	```
+
+7. Reboot:
+
+	```bash
+	sudo reboot
+	```
+
+- **Certainty**: By renaming the subvolume to `@`, you are forcing the bootloader to load the clean files
+- **Safety**: Your "dirty" system is preserved in `/@_broken` in case you forgot to save a file from it.
+
+8. After rebooting, try to run `fastfetch`
+
+	**Success**: If the terminal says command not found, your rollback worked perfectly! You have successfully traveled back in time to before the package was installed.
+
+Once you reboot and confirm `fastfetch` is gone, you are back in your clean state. To get your disk space back, you can delete the "broken" subvolume:
+
+9. Get the broken subvolumes:
+
+	```bash
+	sudo btrfs subvolume list /
+	```
+
+10. Mount the top-level subvolume (ID 5):
+
+	```bash
+	sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt
+	```
+	
+11. Delete the broken volume:
+
+	If you have nested broken subvolumes you have to delete the children first (e.g. /mnt/@\_broken/var/lib/portables)
+
+	```bash
+	sudo btrfs subvolume delete /mnt/@_broken
+	```
+
+12. Unmount:
+
+	```bash
+	sudo umount /mnt
+	```
+ 
+13. **The "Kernel Gap" Warning**
+
+	Rolling back the root filesystem can sometimes leave your kernel out of sync if `/boot` wasn't part of the snapshot.
+	
+	Once you reboot and log back in, immediately run this to ensure your kernel matches your new system:
+	
+	```bash
+	sudo pacman -S linux linux-headers
+	```
+
+	This forces the kernel image in your FAT32 `/boot` partition to match the modules in your restored `/usr/lib/modules`.
+
+	**Troubleshooting: The "Ghost" Pacman Lock**: Every time you rollback, `pacman` might report that the database is locked. This is because the snapshot captured the system while a transaction was open. 
+	
+	**The Fix:**
+
+	```bash
+	sudo rm /var/lib/pacman/db.lck
+	```
+
+	Snapshots are "frozen in time," and if you took a snapshot while a package was installing, the "lock" is frozen into that snapshot too.
+
+	**Note**: Remember, once you clear that lock, you **must** finish the command: 
+	```
+	sudo pacman -S linux linux-headers`
+	```
+	
+---
+
+#### **6. Rollback from GRUB:**
+
+If you break your system:
+
+1. **Reboot**: Select a snapshot from the "Arch Linux snapshots" menu in GRUB.
+2. **Select the Kernel**: Do not click the Date/Description (Header); select the indented line that mentions `vmlinuz-linux`.
+3. **The Permanent Fix**: Once logged in, you are in a temporary session. To make it permanent repeat the steps from the part 5 above.
+
+---
+
+### Final Note: Personal Reference & Credits
+This guide isn't something I wrote from scratch; it is a carefully curated collection of instructions, logic, and configurations that I gathered during my own research, trial, and error.
+
+I put this together because I wanted a single, reliable place to store what I’ve learned about building a "Time Machine" on Arch Linux. I’ve taken the most important parts of various documentation and community advice and organized them into this "Battle-Tested" workflow for my own future installations.
+
+**A few words of advice:**
+
+- **The Arch Wiki is the Truth:** While this guide works for my specific setup (LUKS/Btrfs), always consult the [Arch Wiki](https://wiki.archlinux.org/) for the most up-to-date information.
+- **Test your Backups:** A rollback system you haven't tested is just a hope. Periodically try the "Manual Hero" method to stay sharp.
+- **Your System, Your Responsibility:** Breaking things is the best way to learn how they work. Don't be afraid to experiment, but always make a manual snapshot before you do.
