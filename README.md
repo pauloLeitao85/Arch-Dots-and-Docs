@@ -1431,13 +1431,28 @@ Once you reboot and confirm `fastfetch` is gone, you are back in your clean stat
 	
 ---
 
-#### **6. Rollback from GRUB:**
+#### **6. Rollback from GRUB (The "I Broke It" Emergency Path)**
+If your system won't boot or is behaving strangely, you can use the GRUB menu to jump back in time.
 
-If you break your system:
+1. **Reboot**: At the boot menu, select "**Arch Linux snapshots**".
 
-1. **Reboot**: Select a snapshot from the "Arch Linux snapshots" menu in GRUB.
-2. **Select the Kernel**: Do not click the Date/Description (Header); select the indented line that mentions `vmlinuz-linux`.
-3. **The Permanent Fix**: Once logged in, you are in a temporary session. To make it permanent repeat the steps from the part 5 above.
+2. **Select the Kernel**: Do not click the Date/Description (Header); select the indented line directly below it that mentions `vmlinuz-linux`.
+
+3. **The Temporary Session**: You are now logged into a **read-only** snapshot. You can see your files, but you cannot save changes or install packages yet.
+
+4. **The Permanent Fix**: To make this snapshot your primary system again, you must perform the **Surgical Rollback** you learned in Part 5.
+
+Run these familiar steps:
+
+- **Mount ID 5**: `sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt`
+
+- **Quarantine**: `sudo mv /mnt/@ /mnt/@_broken`
+
+- **Restore**: Look at your prompt or run `findmnt /` to see which snapshot number you are currently booted into. If you are in snapshot **10**, run: `sudo btrfs subvolume snapshot /mnt/@snapshots/10/snapshot /mnt/@`
+
+- **Unmount & Reboot**: `sudo umount /mnt` and `sudo reboot`.
+
+**Note**: Just like in the test, don't forget the **Kernel Gap fix**! Once you reboot into your restored `@` subvolume, delete `db.lck` file `sudo rm /var/lib/pacman/db.lck` and run `sudo pacman -S linux linux-headers` to make sure your boot files match your system files.
 
 ---
 
