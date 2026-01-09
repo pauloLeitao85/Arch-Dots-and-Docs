@@ -1471,7 +1471,7 @@ Run these familiar steps:
 
 ---
 
-### Final Note: Personal Reference & Credits
+## Final Note: Personal Reference & Credits
 This guide isn't something I wrote from scratch; it is a carefully curated collection of instructions, logic, and configurations that I gathered during my own research, trial, and error.
 
 I put this together because I wanted a single, reliable place to store what I’ve learned about building a "Time Machine" on Arch Linux. I’ve taken the most important parts of various documentation and community advice and organized them into this "Battle-Tested" workflow for my own future installations.
