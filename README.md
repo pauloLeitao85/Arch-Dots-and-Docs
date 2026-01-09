@@ -1452,7 +1452,7 @@ Run these familiar steps:
 
 - **Unmount & Reboot**: `sudo umount /mnt` and `sudo reboot`.
 
-**Note**: Just like in the test, don't forget the **Kernel Gap fix**! Once you reboot into your restored `@` subvolume, delete `db.lck` file `sudo rm /var/lib/pacman/db.lck` and run `sudo pacman -S linux linux-headers` to make sure your boot files match your system files.
+**Note**: Just like in the test, don't forget the **Kernel Gap fix**! Once you reboot into your restored `@` subvolume, delete `db.lck` file `sudo rm /var/lib/pacman/db.lck` and run `sudo pacman -S linux linux-headers` to make sure your boot files match your system files. And don't forget to delete if not needed the broken volume `@_broken` and the respective children if available as explained in **Part 5** of this section.
 
 ---
 
