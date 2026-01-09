@@ -13,6 +13,8 @@ We are building the system using four core pillars:
 
 - **Performance (Modern Optimizations):** This build is optimized for NVMe/SSD speed. We use zstd transparent compression to save space and increase disk lifespan, and zRAM to provide a high-speed, compressed swap area in memory.
 
+***Unlike standard guides that focus only on installation, this guide focuses on the Full Lifecycle—Security, Performance, and the ability to perform Surgical Rollbacks without a Live USB.***
+
 ---
 
 ## Phase 1: Preparation
