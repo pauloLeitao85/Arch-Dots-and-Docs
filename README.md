@@ -1293,7 +1293,7 @@ To make your "Undo" button work from the GRUB menu.
 
 ---
 
-#### **5. The manual **Surgical Rollback Test**:**
+#### 5. The manual **Surgical Rollback Test
 
 We need to make a change we can actually "undo."
 
@@ -1431,7 +1431,7 @@ Once you reboot and confirm `fastfetch` is gone, you are back in your clean stat
 	
 ---
 
-#### **6. Rollback from GRUB (The "I Broke It" Emergency Path)**
+#### 6. Rollback from GRUB (The "I Broke It" Emergency Path)
 If your system won't boot or is behaving strangely, you can use the GRUB menu to jump back in time.
 
 1. **Reboot**: At the boot menu, select "**Arch Linux snapshots**".
