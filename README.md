@@ -1159,3 +1159,136 @@ Even with no open ports on your router, local hardening is essential for three m
 This configuration represents the **essential minimum** required to secure a modern Arch Linux system. While you can always go deeper into hardening (MAC, AppArmor, or Sandboxing), the combination of **LUKS Encryption**, **UFW Firewall**, **SSH hardening**, **Fail2ban**, and **Microcode patches** provides a rock-solid foundation that protects your data from both physical theft and network-based threats.
 
 ---
+
+## Phase 9: The "Undo" Button (Snapper)
+
+Since we are using **Btrfs**, we can take "snapshots" of the system. If an update or a configuration change breaks your OS, you can roll back the entire system to a previous state in seconds.
+
+### 1. Install the Tools
+
+We will install only the essential terminal-based tools to keep the system lean and ensure you can recover even without a graphical interface.
+
+```bash
+sudo pacman -S snapper snap-pac grub-btrfs inotify-tools
+```
+
+- `snapper`: The main "engine" that creates and manages your snapshots.
+- `snap-pac`: A pacman hook that automatically creates a snapshot before and after you install or update any package.
+- `grub-btrfs`: This adds a "Snapshots" submenu to your GRUB boot screen. If your system won't boot, you can simply select an old snapshot from the menu to start up.
+- `inotify-tools`: Used by the grub-btrfsd daemon to automatically update your boot menu whenever a new snapshot is created.
+- `Btrfs-Assistant` (Optional GUI): Once you have a Desktop Environment (GNOME, KDE, Hyprland, etc.) installed, you can install btrfs-assistant. It provides a point-and-click interface for everything we are about to do in the terminal. For now, we stick to the terminal so you learn how to recover your system even if the GUI won't start.
+
+---
+
+### 2. Configure the "Time Machine"
+
+Snapper needs to be told to watch your root directory, and we need to link it to the `@snapshots` subvolume we created in Phase 2.
+
+1. **Delete Snapper's default folder:**
+
+	```bash
+	sudo umount /.snapshots
+	sudo rm -r /.snapshots
+	```
+
+2. **Create the initial config:**
+
+	```bash
+	sudo snapper -c root create-config /
+	```
+
+**The "Fix": Linking to our @snapshots subvolume:** Snapper creates its own folder, but we want it to use our dedicated subvolume for better organization.
+
+3. **Delete the junk:**
+
+	```bash
+	sudo btrfs subvolume delete /.snapshots
+	```
+
+4. **Re-create and link our subvolume:**
+
+	```bash
+	sudo mkdir /.snapshots
+	sudo mount -a
+	```
+
+	**Note:** Since `/.snapshots` is already in your `/etc/fstab`, `mount -a` automatically remounts our `@snapshots` subvolume into the correct spot.
+
+---
+
+### 3. Set Permissions &amp; Automation
+
+Ensure your user can access the snapshots and tell the system to handle the schedule automatically.
+
+1. **Set Permissions:**
+
+	```
+	sudo chmod 750 /.snapshots
+	```
+
+2. **Enable Automatic Snapshots:**
+
+	For Snapper to work in the background, we need to turn on its "clocks" (timers).
+
+	```bash
+	sudo systemctl enable --now snapper-timeline.timer
+	sudo systemctl enable --now snapper-cleanup.timer
+	```
+	
+	- `snapper-timeline.timer`: This is your "Time Machine." It creates snapshots at regular intervals (like every hour) so you can recover a file you accidentally deleted even if you didn't run a pacman update.
+
+	- **`snapper-cleanup.timer`**: Automatically deletes old snapshots based on the rules in `/etc/snapper/configs/root` so your drive doesn't fill up.
+
+---
+
+### 4. Adding "Bootable Snapshots
+
+To make your "Undo" button work from the GRUB menu.
+
+1. The "Pro" Automation (Daemon):
+
+	This is the best part. Instead of manually updating GRUB every time a snapshot is taken, we enable a "watchdog" that adds new snapshots to the boot menu automatically the moment they are created.
+
+	```bash
+	sudo systemctl enable --now grub-btrfsd
+	```
+
+2. The Daemon Fix (The Path):
+
+   In my case I had already the right path, but doesn't hurt to check.
+
+	1. Run: `sudo EDITOR=NVIM systemctl edit --full grub-btrfsd`
+	2. Change the `ExecStart` line to: `ExecStart=/usr/bin/grub-btrfsd --syslog /.snapshots`
+	3. Save and restart: `sudo systemctl daemon-reload && sudo systemctl restart grub-btrfsd`
+
+4. The Overlay Hook (The Writable RAM):
+
+	Snapshots are read-only. You must add a "writable layer" in RAM or the system will crash during boot
+
+	1. Open mkinitcpio.con:
+
+		```bash
+		sudo nvim /etc/mkinitcpio.conf
+		```
+
+	2. Add `grub-btrfs-overlayfs` to the very end of `HOOKS=(...)`:
+
+		```
+		HOOKS=(base systemd autodetect microcode modconf kms keyboard keymap sd-vconsole block sd-encrypt filesystems fsck grub-btrfs-overlayfs)
+		```
+
+	3. Rebuild the images:
+
+		```bash
+		sudo mkinitcpio -P
+		```
+
+5. Update your GRUB config:
+
+	Tell GRUB to look for the snapshots and build the menu for the first time.
+
+	```bash
+	sudo grub-mkconfig -o /boot/grub/grub.cfg
+	```
+
+---
