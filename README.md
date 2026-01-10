@@ -180,7 +180,7 @@ Installation is easier when you can copy-paste commands from your main computer.
 
 ### 7. Verify UEFI Mode
 
-We ensure the system is booted in UEFI mode, as `systemd-boot` requires it.
+We ensure the system is booted in UEFI mode as modern EFI bootloaders require it.
 
 ```bash
 ls /sys/firmware/efi/efivars
