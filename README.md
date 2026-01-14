@@ -1695,7 +1695,28 @@ This uses the Live USB as a "bridge" to force the snapshot to accept the new ker
 ---
 
 ### 8. Rollback from GRUB (The "I Broke It" Emergency Path)
-If your system won't boot or is behaving strangely, you can use the GRUB menu to jump back in time.
+
+This feature is your first line of defense, but it has one major limitation: It only works if the kernel in the snapshot matches the kernel currently in your /boot partition.
+
+***When to use the GRUB Menu:***
+
+- **The "Configuration Oops":** You edited a config file (like `/etc/fstab` or a desktop theme) and the system won't boot.
+
+- **The "Broken App":** You installed a software package that messed up your environment, but you haven't updated your kernel since the last snapshot.
+
+- **The Result:** The system will boot into the snapshot in Read-Only mode. You can verify your files are safe before performing a permanent Surgical Rollback.
+
+***When the GRUB Menu will FAIL:***
+
+- **The "Post-Update Disaster":** If you ran `pacman -Syu`, updated your kernel to a new version, and then the system broke.
+
+- **The Reason:** The GRUB menu will try to boot an old snapshot (Body) with a new kernel (Head). Because they don't match, it will drop to **Emergency Mode**.
+
+- **The Fix:** In this case, ignore the GRUB menu and use **Path 2: The Live USB Rescue**.
+
+---
+
+#### How to Rollback from GRUB:
 
 1. **Reboot**: At the boot menu, select "**Arch Linux snapshots**".
 
@@ -1715,7 +1736,7 @@ Run these familiar steps:
 
 - **Unmount & Reboot**: `sudo umount /mnt` and `sudo reboot`.
 
-**Note**: Just like in the test, don't forget the **Kernel Gap fix**! Once you reboot into your restored `@` subvolume, delete `db.lck` file `sudo rm /var/lib/pacman/db.lck` and run `sudo pacman -S linux linux-headers` to make sure your boot files match your system files. And don't forget to delete if not needed the broken volume `@_broken` and the respective children if available as explained in **Part 5** of this section.
+**Note**: Just like in the test, don't forget once you reboot into your restored `@` subvolume, delete `db.lck` file `sudo rm /var/lib/pacman/db.lck` and to delete if not needed the broken volume `@_broken` and the respective children if available as explained in **Part 5** of this section.
 
 ---
 
