@@ -1446,7 +1446,7 @@ Rolling back the root filesystem (@) on a rolling-release system like Arch Linux
 
 ---
 
-#### Path 1: The Proactive "Bridge" (Before you Reboot)
+#### **Path 1: The Proactive "Bridge" (Before you Reboot)**
 
 If you are currently in a working modern system and want to roll back to an old snapshot without using a Live USB, you must "bridge" the drivers:
 
@@ -1555,7 +1555,7 @@ If you are currently in a working modern system and want to roll back to an old 
   
 ---
 
-#### Path 2: The "Surgical Sync" (Live USB Required)
+#### **Path 2: The "Surgical Sync" (Live USB Required)**
 
 Use this if your main system is unbootable, or you are stuck in a "Kernel Gap" that Strategy A couldn't fix from the desktop.
 
@@ -1694,7 +1694,7 @@ This uses the Live USB as a "bridge" to force the snapshot to accept the new ker
 	
 ---
 
-### 7. Rollback from GRUB (The "I Broke It" Emergency Path)
+### 8. Rollback from GRUB (The "I Broke It" Emergency Path)
 If your system won't boot or is behaving strangely, you can use the GRUB menu to jump back in time.
 
 1. **Reboot**: At the boot menu, select "**Arch Linux snapshots**".
