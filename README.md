@@ -1314,7 +1314,7 @@ To make your "Undo" button work from the GRUB menu.
 
 We need to make a change we can actually "undo."
 
-1. Create the "Dirty" state:
+1. **Create the "Dirty" state:**
 
 	Install something small so we can see it disappear:
 	
@@ -1324,7 +1324,7 @@ We need to make a change we can actually "undo."
 
 	(Verify it works by typing `fastfetch`).
 
-2. Check the snapshot number:
+2. **Check the snapshot number:**
 
 	```bash
 	sudo snapper list
@@ -1335,7 +1335,7 @@ We need to make a change we can actually "undo."
 
 	**Note**: you will see something like this. The number we want is 2, the pre fastfetch installation.
 
-3. Mount the top-level subvolume (ID 5):
+3. **Mount the top-level subvolume (ID 5):**
 
 	```bash
 	sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt
@@ -1360,95 +1360,341 @@ We need to make a change we can actually "undo."
 	- **Accessing the Siblings**: Mounting ID 5 allows you to see `@` and `@snapshots` side-by-side.
 	- **Renaming the Living**: You cannot delete or move a subvolume if you are currently "inside" it. By mounting ID 5 to `/mnt`, you are looking at the drive from the "outside," which gives you the power to run the `mv` (rename) command on the `@` subvolume.
 
-4. Quarantine the broken/dirty system:
+4. **Quarantine the broken/dirty system:**
 
 	```bash
 	sudo mv /mnt/@ /mnt/@_broken
 	```
+ 	- ***Certainty***: By renaming the subvolume to `@`, you are forcing the bootloader to load the clean files
+	- ***Safety***: Your "dirty" system is preserved in `/@_broken` in case you forgot to save a file from it.
 
-5. Create a read-write snapshot of your clean Snapshot 2 and name it @:
+5. **Create a read-write snapshot of your clean Snapshot 2 and name it @:**
 
 	```bash
 	sudo btrfs subvolume snapshot /mnt/@snapshots/2/snapshot /mnt/@
 	```
 
-6. Unmount:
+6. **Unmount:**
 
 	```bash
 	sudo umount /mnt
 	```
 
-7. Reboot:
+7. **Reboot:**
 
 	```bash
 	sudo reboot
 	```
 
-- **Certainty**: By renaming the subvolume to `@`, you are forcing the bootloader to load the clean files
-- **Safety**: Your "dirty" system is preserved in `/@_broken` in case you forgot to save a file from it.
+8. **After rebooting, try to run `fastfetch`**
 
-8. After rebooting, try to run `fastfetch`
+	***Success***: If the terminal says command not found, your rollback worked perfectly! You have successfully traveled back in time to before the package was installed.
 
-	**Success**: If the terminal says command not found, your rollback worked perfectly! You have successfully traveled back in time to before the package was installed.
-
-Once you reboot and confirm `fastfetch` is gone, you are back in your clean state. To get your disk space back, you can delete the "broken" subvolume:
-
-9. Get the broken subvolumes:
-
-	```bash
-	sudo btrfs subvolume list /
-	```
-
-10. Mount the top-level subvolume (ID 5):
-
-	```bash
-	sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt
-	```
-	
-11. Delete the broken volume:
-
-	If you have nested broken subvolumes you have to delete the children first (e.g. /mnt/@\_broken/var/lib/portables)
-
-	```bash
-	sudo btrfs subvolume delete /mnt/@_broken
-	```
-
-12. Unmount:
-
-	```bash
-	sudo umount /mnt
-	```
- 
-13. **The "Kernel Gap" Warning**
-
-	Rolling back the root filesystem can sometimes leave your kernel out of sync if `/boot` wasn't part of the snapshot.
-	
-	Once you reboot and log back in, immediately run this to ensure your kernel matches your new system:
-	
-	```bash
-	sudo pacman -S linux linux-headers
-	```
-
-	This forces the kernel image in your FAT32 `/boot` partition to match the modules in your restored `/usr/lib/modules`.
-
-	**Troubleshooting: The "Ghost" Pacman Lock**: Every time you rollback, `pacman` might report that the database is locked. This is because the snapshot captured the system while a transaction was open. 
-	
-	**The Fix:**
-
+9. **The “Ghost” Pacman Lock**
+     
+     Every time you rollback, pacman might report that the database is locked. This is because the snapshot captured the system while a transaction was open.
+     
+     Delete the `db.lck` file:
+   
 	```bash
 	sudo rm /var/lib/pacman/db.lck
 	```
 
-	Snapshots are "frozen in time," and if you took a snapshot while a package was installing, the "lock" is frozen into that snapshot too.
+10. **Delete the "broken" subvolumes**
 
-	**Note**: Remember, once you clear that lock, you **must** finish the command: 
+	Once you reboot and confirm `fastfetch` is gone, you are back in your clean state. To get your disk space back, you can delete the "broken" subvolume:
+
+	1. **Get the broken subvolumes:**
+
+		```bash
+		sudo btrfs subvolume list /
+		```
+
+	2. **Mount the top-level subvolume (ID 5):**
+	
+		```bash
+		sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt
+		```
+	
+	3. **Delete the broken volume:**
+	
+		If you have nested broken subvolumes you have to delete the children first (e.g. /mnt/@\_broken/var/lib/portables)
+	
+		```bash
+		sudo btrfs subvolume delete /mnt/@_broken
+		```
+
+	4. **Unmount:**
+	
+		```bash
+		sudo umount /mnt
+		```
+
+***Note:*** This worked out without much of a hurdle because tthe kernel version of the `@_broken` subvolume was the same as the `@snapshots/2/snapshot`. In the next part we will see what we can do when the kernel version don't match.
+ 
+---
+
+### 7. The "Kernel Gap" & Rollback Safety
+
+Rolling back the root filesystem (@) on a rolling-release system like Arch Linux creates a unique danger: The Kernel Mismatch. #### The Problem: Head vs. Body
+
+- **The Head** (`/boot`): Your kernel lives here. It is not part of your snapshot. When you run `sudo pacman -Syu`, the kernel in `/boot` updates immediately to the newest version (e.g., `6.18.5`).
+
+- **The Body** (`/usr/lib/modules`): This is where the drivers (modules) live. These **are** part of your snapshot.
+
+- **The Gap**: If you roll back to an old snapshot (e.g., Snapshot 43), your "Body" only contains drivers for an old kernel (e.g., `6.18.4`). When the new "Head" tries to boot, it looks for its matching "Body," finds nothing, and crashes with an `unknown filesystem type vfat` error because it can't even load the drivers to read your disk.
+
+---
+
+#### Path 1: The Proactive "Bridge" (Before you Reboot)
+
+If you are currently in a working modern system and want to roll back to an old snapshot without using a Live USB, you must "bridge" the drivers:
+
+1. **Mount the target snapshot:**
 	```
-	sudo pacman -S linux linux-headers`
+   sudo mount -o subvol=@snapshots/XX/snapshot /dev/mapper/cryptroot /mnt
 	```
+	
+2. **Make it Writable:** (Snapshots are read-only by default)
+	```
+	sudo btrfs property set /mnt ro false
+	```
+
+3. **Inject the Drivers:** Copy your current working drivers into the old snapshot.
+	```
+	sudo cp -r /usr/lib/modules/$(uname -r) /mnt/usr/lib/modules/
+	```
+
+5. **Make it read-only again:**
+	```
+	sudo btrfs property set /mnt ro true
+	```
+
+6. **Unmount:**
+   ```
+   sudo umount /mnt
+   ```
+
+7. **Mount the top-level subvolume (ID 5):**
+
+	```bash
+	sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt
+	```
+
+ 8. **Quarantine the broken/dirty system:**
+
+	```bash
+	sudo mv /mnt/@ /mnt/@_broken
+	```
+
+ 9. **Create a read-write snapshot of your clean Snapshot and name it @:**
+
+	```bash
+	sudo btrfs subvolume snapshot /mnt/@snapshots/xx/snapshot /mnt/@
+	```
+
+10. **Unmount:**
+
+	```bash
+	sudo umount /mnt
+	```
+
+11. **Reboot:**
+
+	```bash
+	sudo reboot
+	```
+
+12. **Delete the “Ghost” Pacman Lock**
+     
+     Delete the `db.lck` file:
+   
+	```bash
+	sudo rm /var/lib/pacman/db.lck
+	```
+
+13. **Force a Sync (with Overwrite):** Pacman will complain that files already exist. Force it to take ownership:
+	```
+	sudo pacman -Syu --overwrite "/usr/lib/modules/$(uname -r)/*"
+	```
+
+14. **Verify Secure Boot signatures:** If you are using `sbctl`, always verify your signatures after a kernel re-sync:
+	```
+	sudo sbctl verify
+	```
+
+15. **Delete the "broken" subvolumes**
+
+	Once you reboot and confirm everything is good, you are back in your clean state. To get your disk space back, you can delete the "broken" subvolume:
+
+	1. **Get the broken subvolumes:**
+
+		```bash
+		sudo btrfs subvolume list /
+		```
+
+	2. **Mount the top-level subvolume (ID 5):**
+	
+		```bash
+		sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt
+		```
+	
+	3. **Delete the broken volume:**
+	
+		If you have nested broken subvolumes you have to delete the children first (e.g. /mnt/@\_broken/var/lib/portables)
+	
+		```bash
+		sudo btrfs subvolume delete /mnt/@_broken
+		```
+
+	4. **Unmount:**
+	
+		```bash
+		sudo umount /mnt
+		```
+  
+---
+
+#### Path 2: The "Surgical Sync" (Live USB Required)
+
+Use this if your main system is unbootable, or you are stuck in a "Kernel Gap" that Strategy A couldn't fix from the desktop.
+
+This uses the Live USB as a "bridge" to force the snapshot to accept the new kernel.
+
+1. **Disable secure boot**
+2. **Boot the Arch Live USB.**
+3. **Connecting to Wi-Fi (if needed):**
+
+	```bash
+	iwctl --passphrase "YOUR_PASSWORD" station wlan0 connect "YOUR_SSID"
+	```
+ 
+4. **Unlock the encrypted Partition:**
+
+	```bash
+	cryptsetup open /dev/nvme0n1p2 cryptroot
+	```
+ 
+5. **Mount the Snapshot as Root:**
+
+   We will mount the snapshot you want to rescue, "step inside" it, and force the kernel and drivers to match.
+   
+	```
+	mount -o subvol=@snapshots/xx/snapshot /dev/mapper/cryptroot /mnt
+	```
+ 
+6. **Mount the Boot Partition:**
+    
+	```
+	mount /dev/nvme0n1p1 /mnt/boot
+	```
+ 
+7. **Enter the System:**
+	
+	```
+	arch-chroot /mnt
+	```
+
+8. **Delete the `db.lck` file:**
+     
+     ```
+     rm /var/lib/pacman/db.lck
+     ```
+ 
+9. **Force the Re-sync:**
+     This installs the latest kernel drivers into the old snapshot and updates `/boot` simultaneously.
+     
+	```
+	pacman -Syu linux linux-headers
+	```
+ 
+10. **Verify Secure Boot signatures:**
+
+	If you are using `sbctl`, always verify your signatures after a kernel re-sync:
+	
+	```
+	sudo sbctl verify
+	```
+ 
+ 	**Note:** If something is not sign, just re-sign againg as we did in Enabling Secure Boot section.
+
+11. **Exit arch-chroot:**
+
+	```
+ 	exit
+ 	```
+
+12. **Unmount everything:**
+
+     ```
+     umount -R /mnt
+     ```
+
+13. **Mount the Master Drive (ID 5):**
+
+    ```
+    mount -o subvolid=5 /dev/mapper/cryptroot /mnt
+    ```
+
+14. **Quarantine the broken/dirty system:**
+
+	```bash
+	sudo mv /mnt/@ /mnt/@_broken
+	```
+
+15. **Create a read-write snapshot of your clean Snapshot and name it @:**
+
+	```bash
+	sudo btrfs subvolume snapshot /mnt/@snapshots/xx/snapshot /mnt/@
+	```
+
+16. **Unmount:**
+
+	```bash
+	sudo umount /mnt
+	```
+
+17. **Reboot:**
+
+	```bash
+	sudo reboot
+	```
+
+***Don't forget:*** Once you've confirmed you can reach the desktop, restart one more time into the BIOS to Re-enable Secure Boot.
+
+18. **Delete the "broken" subvolumes**
+
+	Once you reboot and confirm everything is good, you are back in your clean state. To get your disk space back, you can delete the "broken" subvolume:
+
+	1. **Get the broken subvolumes:**
+
+		```bash
+		sudo btrfs subvolume list /
+		```
+
+	2. **Mount the top-level subvolume (ID 5):**
+	
+		```bash
+		sudo mount -o subvolid=5 /dev/mapper/cryptroot /mnt
+		```
+	
+	3. **Delete the broken volume:**
+	
+		If you have nested broken subvolumes you have to delete the children first (e.g. /mnt/@\_broken/var/lib/portables)
+	
+		```bash
+		sudo btrfs subvolume delete /mnt/@_broken
+		```
+
+	4. **Unmount:**
+	
+		```bash
+		sudo umount /mnt
+		```
 	
 ---
 
-### 6. Rollback from GRUB (The "I Broke It" Emergency Path)
+### 7. Rollback from GRUB (The "I Broke It" Emergency Path)
 If your system won't boot or is behaving strangely, you can use the GRUB menu to jump back in time.
 
 1. **Reboot**: At the boot menu, select "**Arch Linux snapshots**".
